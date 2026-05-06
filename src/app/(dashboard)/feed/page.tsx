@@ -1,7 +1,5 @@
-'use client'
+'use client';
 
 export default function FeedPage() {
-    return(
-        
-    )
+    return <div>Feed proximamente</div>;
 }
