@@ -7,9 +7,9 @@ import Link from 'next/link';
 import FacebookIcon from '@mui/icons-material/Facebook';
 import GoogleIcon from '@mui/icons-material/Google';
 
-import InputField from '../../common/components/InputField';
-import PrimaryButton from '../../common/components/PrimaryButton';
-import SocialButton from '../../common/components/SocialButton';
+import InputField from '../../../common/components/InputField';
+import PrimaryButton from '../../../common/components/PrimaryButton';
+import SocialButton from '../../../common/components/SocialButton';
 
 export default function LoginPage() {
     const [email, setEmail] = useState('');
@@ -21,7 +21,6 @@ export default function LoginPage() {
     };
 
     return (
-        // Contenedor full screen con imagen de fondo y overlay suave
         <div
             className="min-h-screen w-full flex items-center justify-center bg-cover bg-center relative"
             style={{ backgroundImage: "url('/bg-login.jpg')" }}
