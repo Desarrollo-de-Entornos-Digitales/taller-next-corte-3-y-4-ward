@@ -4,9 +4,9 @@ import { useState } from "react";
 import Link from "next/link";
 import FacebookIcon from "@mui/icons-material/Facebook";
 import GoogleIcon from "@mui/icons-material/Google";
-import InputField from "../../common/components/InputField";
-import PrimaryButton from "../../common/components/PrimaryButton";
-import SocialButton from "../../common/components/SocialButton";
+import InputField from "../../../common/components/InputField";
+import PrimaryButton from "../../../common/components/PrimaryButton";
+import SocialButton from "../../../common/components/SocialButton";
 
 export default function RegisterPage() {
   const [email, setEmail] = useState("");
