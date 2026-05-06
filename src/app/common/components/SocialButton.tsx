@@ -14,8 +14,7 @@ export default function SocialButton({ Icon, onClick }: Props) {
     return (
         <button
             onClick={onClick}
-            // DaisyUI: btn-circle hace el botón redondo
-            className="btn btn-circle bg-white/20 border-0 hover:bg-white/30 text-white"
+            className="btn btn-circle h-12 w-12 rounded-full bg-white/10 border border-white/20 text-white transition duration-200 hover:bg-white/20 shadow-[0_10px_30px_rgba(15,23,42,0.18)]"
         >
             <Icon fontSize="small" />
         </button>

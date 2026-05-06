@@ -14,14 +14,13 @@ export default function InputField({ label, placeholder = '', type = 'text', val
     return (
         <div className="w-full">
             {/* Label encima del input */}
-            <label className="block text-sm font-medium text-white/90 mb-1">{label}</label>
-            {/* Input de DaisyUI con fondo blanco */}
+            <label className="block text-sm font-medium text-white/80 mb-2">{label}</label>
             <input
                 type={type}
                 placeholder={placeholder}
                 value={value}
                 onChange={(e) => onChange(e.target.value)}
-                className="input w-full bg-white text-gray-800 placeholder-gray-400 border-0 focus:outline-none"
+                className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 placeholder:text-slate-400 shadow-sm transition duration-200 focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-400/20"
             />
         </div>
     );
