@@ -1,93 +1,115 @@
-// 'use client' porque maneja estado con useState
-"use client";
-import { useState } from "react";
-import Link from "next/link";
-import FacebookIcon from "@mui/icons-material/Facebook";
-import GoogleIcon from "@mui/icons-material/Google";
-import InputField from "../../../common/components/InputField";
-import PrimaryButton from "../../../common/components/PrimaryButton";
-import SocialButton from "../../../common/components/SocialButton";
+'use client';
+
+import { useRef, useState } from 'react';
+import Image from 'next/image';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import FacebookIcon from '@mui/icons-material/Facebook';
+import GoogleIcon from '@mui/icons-material/Google';
+
+import SocialButton from '../../../common/components/SocialButton';
+
+import registerAction from './register.action';
 
 export default function RegisterPage() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  const formRef = useRef<HTMLFormElement>(null);
+  const router = useRouter();
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
 
-  const handleRegister = () => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
     if (password !== confirmPassword) {
-      console.error("Las contraseñas no coinciden");
+      console.error('Las contraseñas no coinciden');
       return;
     }
-    console.log("Register con:", email, password);
-    // Aquí iría la lógica de registro real
+
+    const formData = new FormData(formRef.current!);
+    const email = formData.get('email') as string;
+    const passwordValue = formData.get('password') as string;
+
+    try {
+      await registerAction(email, passwordValue);
+      router.push('/feed');
+    } catch (error) {
+      console.error('Register error:', error);
+    }
   };
 
   return (
-    
     <div
       className="min-h-screen w-full flex items-center justify-center bg-cover bg-center relative"
-        style={{ backgroundImage: "url('/bg-register.jpg.svg')" }}
+      style={{ backgroundImage: "url('/bg-register.jpg.svg')" }}
     >
-      {/* Overlay azul semitransparente encima de la imagen */}
       <div className="absolute inset-0 bg-blue-900/40" />
 
-      {/* Card con efecto glassmorphism */}
-      <div className="relative z-10 w-full max-w-md mx-4 rounded-3xl overflow-hidden
-        bg-white/10 backdrop-blur-md border border-white/20 shadow-2xl px-10 py-10
-        flex flex-col items-center gap-5">
+      <div className="relative z-10 w-full max-w-md mx-4 rounded-[36px] overflow-hidden bg-white/25 backdrop-blur-4xl border border-white/20 border-t-[2px] border-b-[2px] border-white/30 shadow-[0_30px_80px_rgba(15,23,42,0.22)] px-8 py-10 flex flex-col items-center gap-6">
+        <div className="absolute -top-12 left-1/2 h-44 w-44 -translate-x-1/2 rounded-full bg-gradient-to-r from-sky-400/30 via-blue-500/20 to-indigo-500/15 blur-3xl" />
 
-        {/* Logo / Título */}
-        <h1
-          className="text-5xl font-bold text-[#e8d9b0] tracking-wider"
-          style={{ fontFamily: "'Caveat', cursive" }}
-        >
-          WARD
-        </h1>
-
-        {/* Campos del formulario */}
-        <div className="w-full flex flex-col gap-4">
-          <InputField
-            label="Username / Email address"
-            placeholder="Username / Email address"
-            type="email"
-            value={email}
-            onChange={setEmail}
-          />
-          <InputField
-            label="Password"
-            placeholder="Password"
-            type="password"
-            value={password}
-            onChange={setPassword}
-          />
-          <InputField
-            label="Confirm password"
-            placeholder="Password"
-            type="password"
-            value={confirmPassword}
-            onChange={setConfirmPassword}
-          />
+        <div className="relative z-10 flex flex-col items-center gap-2">
+          <Image src="/ward.svg" alt="WARD" width={220} height={100} className="h-auto w-[220px] object-contain" />
         </div>
 
-        {/* Botón principal */}
-        <PrimaryButton label="Register" onClick={handleRegister} fullWidth />
+        <form ref={formRef} onSubmit={handleSubmit} className="w-full flex flex-col gap-4">
+          <div>
+            <label className="block text-sm text-white/90 mb-1">Username / Email address</label>
+            <input
+              name="email"
+              type="email"
+              placeholder="Username / Email address"
+              required
+              className="w-full rounded-full border border-slate-200 bg-white px-4 py-3 text-gray-800 placeholder-gray-400 transition duration-200 outline-none focus:border-sky-300 focus:ring-0"
+            />
+          </div>
 
-        {/* Divisor "Or register with" */}
+          <div>
+            <label className="block text-sm text-white/90 mb-1">Password</label>
+            <input
+              name="password"
+              type="password"
+              placeholder="Password"
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full rounded-full border border-slate-200 bg-white px-4 py-3 text-gray-800 placeholder-gray-400 transition duration-200 outline-none focus:border-sky-300 focus:ring-0"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm text-white/90 mb-1">Confirm password</label>
+            <input
+              name="confirmPassword"
+              type="password"
+              placeholder="Confirm password"
+              required
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              className="w-full rounded-full border border-slate-200 bg-white px-4 py-3 text-gray-800 placeholder-gray-400 transition duration-200 outline-none focus:border-sky-300 focus:ring-0"
+            />
+          </div>
+
+          <button
+            type="submit"
+            className="btn border-0 rounded-full px-10 py-3 text-white bg-gradient-to-r from-blue-700 to-blue-500 hover:from-blue-800 hover:to-blue-600 font-semibold w-auto mx-auto min-w-[180px]"
+          >
+            Register
+          </button>
+        </form>
+
         <div className="flex items-center gap-3 w-full">
           <div className="flex-1 h-px bg-white/30" />
           <span className="text-sm text-white/70">Or register with</span>
           <div className="flex-1 h-px bg-white/30" />
         </div>
 
-        {/* Botones sociales */}
         <div className="flex gap-4">
-          <SocialButton Icon={FacebookIcon} onClick={() => console.log("Facebook")} />
-          <SocialButton Icon={GoogleIcon} onClick={() => console.log("Google")} />
+          <SocialButton Icon={FacebookIcon} onClick={() => console.log('Facebook')} />
+          <SocialButton Icon={GoogleIcon} onClick={() => console.log('Google')} />
         </div>
 
-        {/* Link a login */}
         <p className="text-sm text-white/70">
-          Already have an Account?{" "}
+          Already have an Account?{' '}
           <Link href="/login" className="font-bold text-white hover:underline">
             Login
           </Link>
