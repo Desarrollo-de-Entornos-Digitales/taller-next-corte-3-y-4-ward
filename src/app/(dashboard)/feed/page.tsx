@@ -120,6 +120,7 @@ export default function FeedPage() {
                         filteredGarments.map((garment) => (
                             <GarmentCard
                                 key={garment.id}
+                                id={garment.id}
                                 label={garment.type}
                                 isFavorited={favorites.has(garment.id)}
                                 onFavorite={(isFav) => handleFavorite(garment.id, isFav)}
