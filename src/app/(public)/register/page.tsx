@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import FacebookIcon from '@mui/icons-material/Facebook';
 import GoogleIcon from '@mui/icons-material/Google';
 
-import SocialButton from '../../../common/components/SocialButton';
+import SocialButton from '../../common/components/SocialButton';
 
 import registerAction from './register.action';
 

@@ -8,7 +8,7 @@ export default function NavBar() {
   const router = useRouter();
 
   const navLinks = [
-    { label: "Mis Prendas", href: "/feed" },
+    { label: "Mis Prendas", href: "/my-garments" },
     { label: "Registrar Prenda", href: "/register-garment" },
     { label: "Crear Outfit", href: "/create-outfit" },
   ];
@@ -115,7 +115,7 @@ export default function NavBar() {
               <li>
                 <button
                   onClick={() => router.push("/profile")}
-                  className="text-white hover:text-slate-200"
+                  className="text- hover:text-slate-200"
                 >
                   Mi Perfil
                 </button>
