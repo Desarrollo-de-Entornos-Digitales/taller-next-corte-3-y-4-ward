@@ -1,6 +1,7 @@
 'use client';
 import Banner from '../../common/components/Banner';
 import GarmentCard from '../../common/components/GarmentCard';
+import NavBar from '../../common/components/NavBar';
 
 export default function FeedPage() {
     const handleFavorite = (id: string, isFavorited: boolean) => {
@@ -9,6 +10,7 @@ export default function FeedPage() {
 
     return (
         <main style={{ backgroundColor: '#131620' }} className="min-h-screen p-8">
+            <NavBar />
             <Banner />
 
             {/* Garments Grid */}
