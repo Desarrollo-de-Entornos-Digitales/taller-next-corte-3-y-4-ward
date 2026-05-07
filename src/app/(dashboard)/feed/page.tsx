@@ -1,6 +1,7 @@
 'use client';
 import { useState } from 'react';
 import Banner from '../../common/components/Banner';
+import AddGarmentCard from '../../common/components/AddGarmentCard';
 import GarmentCard from '../../common/components/GarmentCard';
 import { useGarments } from '../../common/hooks/useGarments';
 
@@ -95,7 +96,8 @@ export default function FeedPage() {
                 )}
 
                 {/* Garment cards */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                    <AddGarmentCard />
                     {garments.length > 0 ? (
                         garments.map((garment) => (
                             <GarmentCard

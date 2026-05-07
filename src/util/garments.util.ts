@@ -4,6 +4,8 @@ export const mockGarments: Garment[] = [
     {
         id: '1',
         type: 'Jacket',
+        brand: 'Ward',
+        color: 'Black',
         name: 'Premium Leather Jacket',
         description: 'High-quality black leather jacket',
         image: '/assets/Jacket.svg',
@@ -13,6 +15,8 @@ export const mockGarments: Garment[] = [
     {
         id: '2',
         type: 'Shirt',
+        brand: 'Stella',
+        color: 'White',
         name: 'Casual Cotton Shirt',
         description: 'Comfortable white cotton shirt',
         image: '/assets/Shirt.svg',
@@ -22,6 +26,8 @@ export const mockGarments: Garment[] = [
     {
         id: '3',
         type: 'Pants',
+        brand: 'Norde',
+        color: 'Blue',
         name: 'Slim Fit Jeans',
         description: 'Modern slim fit jeans in dark blue',
         image: '/assets/pants.svg',
@@ -31,6 +37,8 @@ export const mockGarments: Garment[] = [
     {
         id: '4',
         type: 'T-Shirt',
+        brand: 'Another',
+        color: 'Cream',
         name: 'Graphic Tee',
         description: 'Comfortable graphic printed t-shirt',
         image: '/assets/Tshirt.svg',
@@ -40,6 +48,8 @@ export const mockGarments: Garment[] = [
     {
         id: '5',
         type: 'Sweater',
+        brand: 'Nordic',
+        color: 'Brown',
         name: 'Wool Sweater',
         description: 'Warm wool sweater in gray',
         image: '/assets/Sweater.svg',
@@ -49,6 +59,8 @@ export const mockGarments: Garment[] = [
     {
         id: '6',
         type: 'Jacket',
+        brand: 'Urban',
+        color: 'Blue',
         name: 'Denim Jacket',
         description: 'Classic denim jacket',
         image: '/assets/Jacket.svg',
@@ -58,6 +70,8 @@ export const mockGarments: Garment[] = [
     {
         id: '7',
         type: 'Shorts',
+        brand: 'Sporty',
+        color: 'Black',
         name: 'Casual Shorts',
         description: 'Comfortable cotton shorts',
         image: '/assets/Accessorie.svg',
@@ -67,6 +81,8 @@ export const mockGarments: Garment[] = [
     {
         id: '8',
         type: 'Polo',
+        brand: 'Ward',
+        color: 'Navy',
         name: 'Classic Polo',
         description: 'Elegant polo shirt in navy',
         image: '/assets/Shirt.svg',
@@ -76,14 +92,25 @@ export const mockGarments: Garment[] = [
     {
         id: '9',
         type: 'Blazer',
+        brand: 'Formal',
+        color: 'Gray',
         name: 'Formal Blazer',
         description: 'Professional blazer in dark gray',
         image: '/assets/Jacket.svg',
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
     },
+    {
+        id: '10',
+        type: 'Accessories',
+        brand: 'Vintage',
+        color: 'Brown',
+        name: 'Corduroy Cap',
+        description: 'Warm corduroy cap with patch',
+        image: '/assets/Accessorie.svg',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+    },
 ];
 
-export const getMockGarments = (): Garment[] => {
-    return mockGarments;
-};
+export const getMockGarments = (): Garment[] => mockGarments;
