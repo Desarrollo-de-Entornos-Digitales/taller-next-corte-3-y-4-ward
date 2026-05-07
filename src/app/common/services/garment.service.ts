@@ -1,4 +1,5 @@
 import axiosClient from '../../../lib/axios/client';
+import { getMockGarments } from '../../../util/garments.util';
 
 export interface Garment {
     id: string;
@@ -23,13 +24,12 @@ class GarmentService {
             const result = await axiosClient.get<GarmentsResponse>('/garments');
             return result.data.garments || [];
         } catch (error: any) {
-            // Handle authentication errors gracefully
             if (error.response?.status === 401) {
                 console.warn('Authentication required to fetch garments');
                 return [];
             }
-            console.error('Error fetching garments:', error);
-            throw error;
+            console.warn('Network or API error fetching garments, using mock data fallback:', error?.message || error);
+            return getMockGarments();
         }
     }
 

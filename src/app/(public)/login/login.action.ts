@@ -12,7 +12,7 @@ export default async function loginAction(email: string, password: string): Prom
     try {
         const result = await loginService.login(email, password);
 
-        const cookieStore = cookies();
+        const cookieStore = await cookies();
         cookieStore.set('token', result.access_token, {
             httpOnly: true,
             path: '/',

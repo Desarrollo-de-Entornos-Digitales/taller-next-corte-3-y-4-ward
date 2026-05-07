@@ -62,7 +62,9 @@ export default function LoginPage() {
                         alt="WARD"
                         width={220}
                         height={100}
-                        className="h-auto w-[220px] object-contain"
+                        loading="eager"
+                        style={{ width: 220, height: 'auto' }}
+                        className="object-contain"
                     />
                 </div>
 

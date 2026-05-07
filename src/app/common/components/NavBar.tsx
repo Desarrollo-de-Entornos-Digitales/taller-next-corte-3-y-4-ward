@@ -32,6 +32,8 @@ export default function NavBar() {
               alt="WARD logo"
               width={80}
               height={32}
+              loading="eager"
+              style={{ width: 80, height: 'auto' }}
               className="object-contain"
             />
           </button>
@@ -95,10 +97,12 @@ export default function NavBar() {
             <div tabIndex={0} role="button" className="btn btn-ghost btn-circle avatar hover:ring-2 hover:ring-blue-400 transition-all">
               <div className="w-10 rounded-full overflow-hidden ring-2 ring-white/20 bg-base-200">
                 <Image
-                  src="/assets/avatar-placeholder.svg"
+                  src="/file.svg"
                   alt="User avatar"
                   width={40}
                   height={40}
+                  loading="eager"
+                  style={{ width: 40, height: 'auto' }}
                   className="object-cover"
                 />
               </div>
