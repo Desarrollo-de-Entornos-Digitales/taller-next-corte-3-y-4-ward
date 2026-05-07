@@ -115,8 +115,8 @@ export default function FeedPage() {
                 {/* Garment cards */}
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                     <AddGarmentCard />
-                    {visibleGarments.length > 0 ? (
-                        visibleGarments.map((garment) => (
+                    {filteredGarments.length > 0 ? (
+                        filteredGarments.map((garment) => (
                             <GarmentCard
                                 key={garment.id}
                                 label={garment.type}
