@@ -8,6 +8,7 @@ class RegisterService {
     async register(email: string, password: string): Promise<RegisterResponse> {
         const result = await axiosClient.post<RegisterResponse>('/auth/register', {
             email,
+            username: email,
             password,
         });
         return result.data as RegisterResponse;

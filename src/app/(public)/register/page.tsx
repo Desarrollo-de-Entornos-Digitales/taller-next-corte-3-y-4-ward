@@ -16,12 +16,14 @@ export default function RegisterPage() {
   const router = useRouter();
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setError(null);
 
     if (password !== confirmPassword) {
-      console.error('Las contraseñas no coinciden');
+      setError('Las contraseñas no coinciden');
       return;
     }
 
@@ -30,17 +32,22 @@ export default function RegisterPage() {
     const passwordValue = formData.get('password') as string;
 
     try {
-      await registerAction(email, passwordValue);
-      router.push('/feed');
-    } catch (error) {
-      console.error('Register error:', error);
+      const result = await registerAction(email, passwordValue);
+      if (result.success) {
+        router.push('/feed');
+      } else {
+        setError(result.error);
+      }
+    } catch (clientError) {
+      console.error('Register action error:', clientError);
+      setError('Ocurrió un error al registrar. Intenta de nuevo.');
     }
   };
 
   return (
     <div
       className="min-h-screen w-full flex items-center justify-center bg-cover bg-center relative"
-      style={{ backgroundImage: "url('/bg-register.jpg.svg')" }}
+      style={{ backgroundImage: "url('/bg-login.jpg')" }}
     >
       <div className="absolute inset-0 bg-blue-900/40" />
 
@@ -48,10 +55,22 @@ export default function RegisterPage() {
         <div className="absolute -top-12 left-1/2 h-44 w-44 -translate-x-1/2 rounded-full bg-gradient-to-r from-sky-400/30 via-blue-500/20 to-indigo-500/15 blur-3xl" />
 
         <div className="relative z-10 flex flex-col items-center gap-2">
-          <Image src="/ward.svg" alt="WARD" width={220} height={100} className="h-auto w-[220px] object-contain" />
+          <Image
+            src="/ward.svg"
+            alt="WARD"
+            width={220}
+            height={100}
+            loading="eager"
+            className="w-[220px] h-auto object-contain"
+          />
         </div>
 
         <form ref={formRef} onSubmit={handleSubmit} className="w-full flex flex-col gap-4">
+          {error && (
+            <div className="text-red-500 text-sm text-center">
+              {error}
+            </div>
+          )}
           <div>
             <label className="block text-sm text-white/90 mb-1">Username / Email address</label>
             <input
