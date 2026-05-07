@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -18,21 +18,24 @@ interface LoginResponse {
 export default function LoginPage() {
     const formRef = useRef<HTMLFormElement>(null);
     const router = useRouter();
+    const [loginError, setLoginError] = useState<string | null>(null);
 
-    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
+        setLoginError(null);
+
         const formData = new FormData(formRef.current!);
         const email = formData.get('email') as string;
         const password = formData.get('password') as string;
 
-        loginAction(email, password)
-            .then((result: LoginResponse) => {
-                localStorage.setItem('token', result.access_token);
-                router.push('/feed');
-            })
-            .catch((error) => {
-                console.error('Login error:', error);
-            });
+        try {
+            const result = await loginAction(email, password);
+            localStorage.setItem('token', result.access_token);
+            router.push('/feed');
+        } catch (error: any) {
+            console.error('Login error:', error);
+            setLoginError(error?.message || 'Error al iniciar sesión');
+        }
     };
 
     return (
@@ -98,6 +101,7 @@ export default function LoginPage() {
                     >
                         Log in
                     </button>
+                    {loginError && <p className="text-center text-sm text-red-400 mt-2">{loginError}</p>}
                 </form>
 
                 <div className="flex items-center gap-3 w-full">
@@ -121,4 +125,3 @@ export default function LoginPage() {
         </div>
     );
 }
-
