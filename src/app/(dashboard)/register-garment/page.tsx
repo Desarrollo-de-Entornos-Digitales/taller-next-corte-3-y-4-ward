@@ -29,12 +29,16 @@ export default function RegisterGarmentPage() {
         <main style={{ backgroundColor: '#131620' }} className="min-h-screen">
             <Banner />
             <section className="px-8 md:px-16 py-14">
-                <div className="mb-10 flex flex-col gap-3 text-white">
-                    <p className="text-blue-400 font-semibold text-sm">Agregar prenda</p>
-                    <h1 className="text-4xl font-bold">Consume el endpoint de prendas</h1>
-                    <p className="max-w-2xl text-white/70">
-                        Aquí se realiza la llamada al endpoint GET /garments. Si tu backend necesita credenciales,
-                        asegúrate de estar autenticado.
+                <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-6 mb-12">
+                    <div>
+                        <p className="text-blue-400 font-semibold text-sm">Registrar prenda</p>
+                        <h2 className="text-white font-bold text-4xl md:text-5xl leading-tight">
+                            Tus prendas más usadas
+                        </h2>
+                    </div>
+                    <p className="text-white/80 text-base md:text-lg max-w-sm md:mt-8 leading-relaxed">
+                        Aquí puedes ver las prendas más destacadas. En cuanto implementemos el registro completo,
+                        esta sección mostrará la nueva prenda creada.
                     </p>
                 </div>
 
@@ -46,7 +50,7 @@ export default function RegisterGarmentPage() {
                     </div>
                 ) : garments.length === 0 ? (
                     <div className="rounded-3xl bg-slate-950/80 p-10 text-center text-white/70">
-                        No se encontraron prendas en el endpoint.
+                        Aún no hay prendas disponibles.
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

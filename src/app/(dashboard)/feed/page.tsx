@@ -64,6 +64,8 @@ export default function FeedPage() {
         );
     }
 
+    const visibleGarments = garments.slice(0, 3);
+
     return (
         <main style={{ backgroundColor: '#131620' }} className="min-h-screen">
             <Banner />
@@ -98,8 +100,8 @@ export default function FeedPage() {
                 {/* Garment cards */}
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                     <AddGarmentCard />
-                    {garments.length > 0 ? (
-                        garments.map((garment) => (
+                    {visibleGarments.length > 0 ? (
+                        visibleGarments.map((garment) => (
                             <GarmentCard
                                 key={garment.id}
                                 label={garment.type}

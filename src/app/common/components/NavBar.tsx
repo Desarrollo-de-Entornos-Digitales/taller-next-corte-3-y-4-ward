@@ -16,6 +16,7 @@ export default function NavBar() {
   const handleLogout = async () => {
     localStorage.removeItem('token');
     await logoutAction();
+    router.push('/login');
   };
 
   return (
@@ -75,7 +76,7 @@ export default function NavBar() {
                 <li key={link.href}>
                   <button
                     onClick={() => router.push(link.href)}
-                    className="text-white/80 hover:text-white"
+                    className="text-white hover:text-slate-200"
                   >
                     {link.label}
                   </button>
@@ -114,7 +115,7 @@ export default function NavBar() {
               <li>
                 <button
                   onClick={() => router.push("/profile")}
-                  className="text-white/80 hover:text-white"
+                  className="text-white hover:text-slate-200"
                 >
                   Mi Perfil
                 </button>
