@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import logoutAction from "../../logout.action";
 
 export default function NavBar() {
   const router = useRouter();
@@ -11,6 +12,11 @@ export default function NavBar() {
     { label: "Registrar Prenda", href: "/register-garment" },
     { label: "Crear Outfit", href: "/create-outfit" },
   ];
+
+  const handleLogout = async () => {
+    localStorage.removeItem('token');
+    await logoutAction();
+  };
 
   return (
     <div className="absolute top-6 left-1/2 -translate-x-1/2 z-50 w-[90%] max-w-4xl">
@@ -73,24 +79,52 @@ export default function NavBar() {
                   </button>
                 </li>
               ))}
+              <li>
+                <button
+                  onClick={handleLogout}
+                  className="text-red-400 hover:text-red-300"
+                >
+                  Cerrar Sesión
+                </button>
+              </li>
             </ul>
           </div>
 
-          {/* Avatar — reemplaza src con la foto real del usuario cuando conectes auth */}
-          <button
-            onClick={() => router.push("/profile")}
-            className="btn btn-ghost btn-circle avatar hover:ring-2 hover:ring-blue-400 transition-all"
-          >
-            <div className="w-10 rounded-full overflow-hidden ring-2 ring-white/20 bg-base-200">
-              <Image
-                src="/assets/avatar-placeholder.svg"
-                alt="User avatar"
-                width={40}
-                height={40}
-                className="object-cover"
-              />
+          {/* Avatar dropdown */}
+          <div className="dropdown dropdown-end">
+            <div tabIndex={0} role="button" className="btn btn-ghost btn-circle avatar hover:ring-2 hover:ring-blue-400 transition-all">
+              <div className="w-10 rounded-full overflow-hidden ring-2 ring-white/20 bg-base-200">
+                <Image
+                  src="/assets/avatar-placeholder.svg"
+                  alt="User avatar"
+                  width={40}
+                  height={40}
+                  className="object-cover"
+                />
+              </div>
             </div>
-          </button>
+            <ul
+              tabIndex={0}
+              className="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-300 rounded-box w-52"
+            >
+              <li>
+                <button
+                  onClick={() => router.push("/profile")}
+                  className="text-white/80 hover:text-white"
+                >
+                  Mi Perfil
+                </button>
+              </li>
+              <li>
+                <button
+                  onClick={handleLogout}
+                  className="text-red-400 hover:text-red-300"
+                >
+                  Cerrar Sesión
+                </button>
+              </li>
+            </ul>
+          </div>
         </div>
       </div>
     </div>
