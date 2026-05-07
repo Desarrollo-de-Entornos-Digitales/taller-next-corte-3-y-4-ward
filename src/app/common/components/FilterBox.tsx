@@ -8,34 +8,46 @@ type FilterBoxProps = {
     options: string[];
     placeholder?: string;
     onChange: (value: string) => void;
+    disabled?: boolean;
 };
 
-export default function FilterBox({ label, value, options, placeholder = 'Select', onChange }: FilterBoxProps) {
+export default function FilterBox({
+    label,
+    value,
+    options,
+    placeholder = 'Select',
+    onChange,
+    disabled = false,
+}: FilterBoxProps) {
     const [isOpen, setIsOpen] = useState(false);
     const selectedText = value || placeholder;
 
     return (
-        <div className="relative min-w-[220px]">
+        <div className="relative">
             <button
                 type="button"
-                onClick={() => setIsOpen((current) => !current)}
+                disabled={disabled}
+                onClick={() => !disabled && setIsOpen((current) => !current)}
                 onBlur={() => setTimeout(() => setIsOpen(false), 120)}
-                className="group w-full rounded-[24px] border border-white/20 bg-slate-950/70 px-5 py-4 text-left transition duration-200 hover:border-sky-400/80 hover:bg-slate-900/95 focus:outline-none focus:ring-2 focus:ring-sky-500"
+                className={`rounded-[20px] border px-5 py-2 text-sm font-medium flex items-center justify-between gap-3 transition duration-200 ${
+                    disabled
+                        ? 'border-gray-600/40 bg-slate-900/30 text-gray-600 cursor-not-allowed'
+                        : 'border-gray-600/50 bg-slate-900/50 text-white hover:border-gray-500/80 hover:bg-slate-900/70'
+                }`}
             >
-                <div className="flex items-center justify-between gap-4">
-                    <div>
-                        <p className="text-xs uppercase tracking-[0.24em] text-slate-400">{label}</p>
-                        <p className="mt-1 text-base font-semibold text-white">{selectedText}</p>
-                    </div>
-                    <div className="rounded-full bg-slate-800 p-2 text-slate-300 transition duration-200 group-hover:bg-sky-500 group-hover:text-white">
-                        <span className={`inline-block transform transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}>▾</span>
-                    </div>
-                </div>
+                {selectedText}
+                {!disabled && (
+                    <span
+                        className={`inline-block transform transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
+                    >
+                        ▾
+                    </span>
+                )}
             </button>
 
-            {isOpen && (
-                <div className="absolute left-0 right-0 z-20 mt-3 rounded-3xl border border-white/10 bg-slate-950/95 shadow-2xl shadow-black/30 backdrop-blur-xl">
-                    <div className="max-h-56 overflow-y-auto p-3">
+            {isOpen && !disabled && (
+                <div className="absolute left-0 right-0 z-20 mt-2 rounded-xl border border-gray-600/30 bg-slate-950/90 shadow-lg backdrop-blur-sm">
+                    <div className="max-h-56 overflow-y-auto p-2">
                         {options.map((option) => (
                             <button
                                 key={option}
@@ -44,10 +56,10 @@ export default function FilterBox({ label, value, options, placeholder = 'Select
                                     onChange(option);
                                     setIsOpen(false);
                                 }}
-                                className={`w-full rounded-2xl px-4 py-3 text-left text-sm transition duration-150 ${
+                                className={`w-full rounded-lg px-3 py-2 text-left text-sm transition duration-150 ${
                                     option === value
-                                        ? 'bg-sky-500/20 text-sky-200'
-                                        : 'text-white/80 hover:bg-white/10 hover:text-white'
+                                        ? 'bg-blue-500/30 text-blue-200'
+                                        : 'text-white/70 hover:bg-white/10 hover:text-white'
                                 }`}
                             >
                                 {option}
