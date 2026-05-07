@@ -28,7 +28,7 @@ export default function FeedPage() {
 
     if (loading) {
         return (
-            <main style={{ backgroundColor: '#131620' }} className="min-h-screen">
+            <main style={{ backgroundColor: '#131620' }}>
                 <Banner />
                 <section className="px-8 md:px-16 py-14">
                     <div className="flex justify-center items-center h-64">
@@ -41,7 +41,7 @@ export default function FeedPage() {
 
     if (error) {
         return (
-            <main style={{ backgroundColor: '#131620' }} className="min-h-screen">
+            <main style={{ backgroundColor: '#131620' }}>
                 <Banner />
                 <section className="px-8 md:px-16 py-14">
                     <div className="flex justify-center items-center h-64">
@@ -54,7 +54,7 @@ export default function FeedPage() {
 
     if (!isAuthenticated) {
         return (
-            <main style={{ backgroundColor: '#131620' }} className="min-h-screen">
+            <main style={{ backgroundColor: '#131620' }}>
                 <Banner />
                 <section className="px-8 md:px-16 py-14">
                     <div className="flex flex-col justify-center items-center h-64 gap-4">
@@ -68,10 +68,11 @@ export default function FeedPage() {
         );
     }
 
-    const filteredGarments = activeType && activeType !== 'All types' ? garments.filter((garment) => garment.type === activeType) : garments;
+    const filteredGarments =
+        activeType && activeType !== 'All types' ? garments.filter((garment) => garment.type === activeType) : garments;
 
     return (
-        <main style={{ backgroundColor: '#131620' }} className="min-h-screen">
+        <main style={{ backgroundColor: '#131620' }}>
             <Banner />
 
             {/* Resumen de tu armario */}
