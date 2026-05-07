@@ -2,12 +2,16 @@
 import { useState } from 'react';
 import Banner from '../../common/components/Banner';
 import AddGarmentCard from '../../common/components/AddGarmentCard';
+import FilterPanel from '../../common/components/FilterPanel';
 import GarmentCard from '../../common/components/GarmentCard';
 import { useGarments } from '../../common/hooks/useGarments';
+import { garmentTypes } from '../../../util/garments.util';
 
 export default function FeedPage() {
     const { garments, loading, error, isAuthenticated, isUsingMockData } = useGarments();
     const [favorites, setFavorites] = useState<Set<string>>(new Set());
+    const [pendingType, setPendingType] = useState<string | null>(null);
+    const [activeType, setActiveType] = useState<string | null>(null);
 
     const handleFavorite = (id: string, isFavorited: boolean) => {
         setFavorites((prev) => {
@@ -64,7 +68,7 @@ export default function FeedPage() {
         );
     }
 
-    const visibleGarments = garments.slice(0, 3);
+    const filteredGarments = activeType && activeType !== 'All types' ? garments.filter((garment) => garment.type === activeType) : garments;
 
     return (
         <main style={{ backgroundColor: '#131620' }} className="min-h-screen">
@@ -72,6 +76,17 @@ export default function FeedPage() {
 
             {/* Resumen de tu armario */}
             <section className="px-8 md:px-16 py-14">
+                <FilterPanel
+                    types={garmentTypes}
+                    selectedType={activeType}
+                    pendingType={pendingType}
+                    onPendingTypeChange={setPendingType}
+                    onApply={() => setActiveType(pendingType === 'All types' ? null : pendingType)}
+                    onClear={() => {
+                        setPendingType(null);
+                        setActiveType(null);
+                    }}
+                />
                 {/* Header: dos columnas */}
                 <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-6 mb-12">
                     <div>

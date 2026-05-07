@@ -80,4 +80,16 @@ export const mockGarments: Garment[] = [
     },
 ];
 
+export const garmentTypes = [
+    'T-Shirt',
+    'Shirt',
+    'Pants',
+    'Jacket',
+    'Sweater',
+    'Dress',
+    'Skirt',
+    'Shoes',
+    'Accessories',
+];
+
 export const getMockGarments = (): Garment[] => mockGarments;
