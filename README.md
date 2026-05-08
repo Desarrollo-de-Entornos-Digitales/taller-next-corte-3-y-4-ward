@@ -1,6 +1,7 @@
 # WARD - Wardrobe Management Application
 
 Una aplicación web moderna para gestionar tu armario digital. WARD permite a los usuarios registrarse, iniciar sesión, agregar prendas de ropa a su armario personal, filtrar por tipos de prendas, ver detalles de cada prenda, y marcar favoritos.
+Link de figma: https://www.figma.com/design/qydMi6x1UsHVyCrxn2qkG4/WARD?node-id=12-38&t=gDgf6Xd6a8drT4Xm-1
 
 ## Tabla de Contenidos
 
