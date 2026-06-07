@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useGarments } from '@/src/app/common/hooks/useGarments';
-import { useOutfitStore } from './store/useOutfitStore';
+import { useOutfitStore } from '@/src/lib/zustand/outfitStore';
 import { outfitService } from './services/outfit.service';
 import OutfitNameInput from './components/OutfitNameInput';
 import OccasionSelector from './components/OccasionSelector';
@@ -11,24 +11,34 @@ import AddGarmentsSection from './components/AddGarmentsSection';
 
 export default function CreateOutfitPage() {
     const { garments, loading, error } = useGarments();
-    const { state, actions } = useOutfitStore();
+    const {
+        selectedGarmentIds,
+        outfitName,
+        occasion,
+        toggleGarment,
+        clearOutfit,
+        setOutfitName,
+        setOccasion,
+    } = useOutfitStore();
     const [isSaving, setIsSaving] = useState(false);
     const [saveError, setSaveError] = useState<string | null>(null);
     const [saveSuccess, setSaveSuccess] = useState(false);
 
+    const selectedGarments = garments.filter((g) => selectedGarmentIds.includes(g.id));
+
     const handleSaveOutfit = async () => {
         // Validaciones
-        if (!state.name.trim()) {
+        if (!outfitName.trim()) {
             setSaveError('El nombre del outfit es requerido');
             return;
         }
 
-        if (!state.occasion) {
+        if (!occasion) {
             setSaveError('Debes seleccionar una ocasión');
             return;
         }
 
-        if (state.selectedGarments.length === 0) {
+        if (selectedGarments.length === 0) {
             setSaveError('Debes seleccionar al menos una prenda');
             return;
         }
@@ -38,13 +48,13 @@ export default function CreateOutfitPage() {
             setSaveError(null);
 
             await outfitService.createOutfit({
-                name: state.name,
-                occasion: state.occasion,
-                garments: state.selectedGarments,
+                name: outfitName,
+                occasion: occasion,
+                garments: selectedGarments,
             });
 
             // Reset form on success
-            actions.reset();
+            clearOutfit();
             setSaveSuccess(true);
 
             // Limpiar mensaje de éxito después de 3 segundos
@@ -105,20 +115,20 @@ export default function CreateOutfitPage() {
                     <div className="lg:col-span-1 space-y-6">
                         <div className="bg-slate-800/50 backdrop-blur rounded-2xl border border-slate-700/50 p-6 space-y-6">
                             <OutfitNameInput
-                                value={state.name}
-                                onChange={actions.setOutfitName}
+                                value={outfitName}
+                                onChange={setOutfitName}
                             />
 
                             <OccasionSelector
-                                value={state.occasion}
-                                onChange={actions.setOccasion}
+                                value={occasion}
+                                onChange={setOccasion}
                             />
 
                             {/* Info Box */}
                             <div className="bg-blue-500/10 border border-blue-500/30 rounded-xl p-4">
                                 <p className="text-sm text-blue-200">
                                     <span className="font-semibold">Prendas seleccionadas: </span>
-                                    {state.selectedGarments.length}
+                                    {selectedGarments.length}
                                 </p>
                             </div>
                         </div>
@@ -127,8 +137,8 @@ export default function CreateOutfitPage() {
                     {/* Selected Garments Section */}
                     <div className="lg:col-span-2">
                         <SelectedGarmentsSection
-                            garments={state.selectedGarments}
-                            onRemoveGarment={actions.removeGarment}
+                            garments={selectedGarments}
+                            onRemoveGarment={toggleGarment}
                         />
                     </div>
                 </div>
@@ -137,8 +147,8 @@ export default function CreateOutfitPage() {
                 <div className="mb-12">
                     <AddGarmentsSection
                         availableGarments={garments}
-                        selectedGarmentIds={state.selectedGarments.map((g) => g.id)}
-                        onAddGarment={actions.addGarment}
+                        selectedGarmentIds={selectedGarmentIds}
+                        onToggleGarment={toggleGarment}
                     />
                 </div>
 
@@ -146,7 +156,7 @@ export default function CreateOutfitPage() {
                 <div className="flex justify-center">
                     <button
                         onClick={handleSaveOutfit}
-                        disabled={isSaving || state.selectedGarments.length === 0}
+                        disabled={isSaving || selectedGarments.length === 0}
                         className="px-12 py-4 bg-linear-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 disabled:from-slate-600 disabled:to-slate-600 disabled:cursor-not-allowed text-white font-bold rounded-full transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105 disabled:hover:scale-100 text-lg"
                     >
                         {isSaving ? (

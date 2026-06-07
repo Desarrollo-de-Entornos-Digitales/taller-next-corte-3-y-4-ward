@@ -10,6 +10,7 @@ import GoogleIcon from '@mui/icons-material/Google';
 import SocialButton from '../../common/components/SocialButton';
 
 import loginAction from './login.action';
+import { useUserStore } from '@/src/lib/zustand/userStore';
 
 const getErrorMessage = (error: unknown, fallback: string) => {
     if (error instanceof Error) return error.message;
@@ -20,6 +21,7 @@ export default function LoginPage() {
     const formRef = useRef<HTMLFormElement>(null);
     const router = useRouter();
     const [loginError, setLoginError] = useState<string | null>(null);
+    const { setUser } = useUserStore();
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -33,11 +35,21 @@ export default function LoginPage() {
             const result = await loginAction(email, password);
             localStorage.setItem('token', result.access_token);
 
+            // Set user in Zustand store with hardcoded data for now
+            setUser({
+                id: '1',
+                username: email.split('@')[0],
+                email: email,
+                avatar: null,
+                roleId: 1,
+            });
+
             // Try to fetch current user and cache it locally
             try {
                 const { userService } = await import('@/src/app/common/services/user.service');
                 const apiUser = await userService.getCurrentUser();
                 if (apiUser) {
+                    setUser(apiUser);
                     try { localStorage.setItem('current_user', JSON.stringify(apiUser)); } catch (e) {}
                 }
             } catch (e) {

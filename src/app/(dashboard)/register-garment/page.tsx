@@ -4,12 +4,14 @@ import { useEffect, useState } from 'react';
 import Banner from '../../common/components/Banner';
 import GarmentCard from '../../common/components/GarmentCard';
 import { garmentService, Garment } from '../../common/services/garment.service';
+import { useGarmentStore } from '@/src/lib/zustand/garmentStore';
 import { garmentTypes } from '@/src/util/garments.util';
 
 export default function RegisterGarmentPage() {
     const [garments, setGarments] = useState<Garment[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const { addGarment } = useGarmentStore();
 
     // Form state
     const [name, setName] = useState('');
@@ -51,7 +53,13 @@ export default function RegisterGarmentPage() {
 
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files && e.target.files[0];
-        if (file) setImageFile(file);
+        if (file) {
+            setImageFile(file);
+            // También crear un preview para mostrar inmediatamente
+            const reader = new FileReader();
+            reader.onload = () => setImagePreview(String(reader.result));
+            reader.readAsDataURL(file);
+        }
     };
 
     const resetForm = () => {
@@ -93,6 +101,8 @@ export default function RegisterGarmentPage() {
 
             const created = await garmentService.createGarment(form);
             setGarments((prev) => [created, ...prev]);
+            // Also add to Zustand store
+            addGarment(created);
             setSaveSuccess(true);
             resetForm();
             setTimeout(() => setSaveSuccess(false), 3000);
@@ -105,8 +115,7 @@ export default function RegisterGarmentPage() {
     };
 
     return (
-        <main style={{ backgroundColor: '#131620' }} className="min-h-screen pb-12">
-
+        <main className="min-h-screen bg-linear-to-b from-slate-950 via-slate-900 to-slate-950 pb-12">
             <section className="px-8 md:px-16 py-14">
                 <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-6 mb-12">
                     <div>
@@ -118,7 +127,7 @@ export default function RegisterGarmentPage() {
                     </p>
                 </div>
 
-                <div className="rounded-3xl bg-slate-950/80 p-10">
+                <div className="rounded-3xl bg-slate-800/50 backdrop-blur border border-slate-700/50 p-10">
                     {saveError && (
                         <div className="mb-4 bg-rose-500/10 border border-rose-500/20 p-3 text-red-300 rounded">{saveError}</div>
                     )}
@@ -128,20 +137,20 @@ export default function RegisterGarmentPage() {
 
                     <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
                         <div className="flex flex-col items-center gap-4">
-                            <div className="w-64 h-64 rounded-xl bg-linear-to-br from-blue-700 to-sky-600 flex items-center justify-center overflow-hidden shadow-inner">
+                            <div className="w-64 h-64 rounded-xl bg-linear-to-br from-blue-700 to-sky-600 flex items-center justify-center overflow-hidden shadow-inner cursor-pointer hover:shadow-lg transition-shadow">
                                 {imagePreview ? (
                                     // eslint-disable-next-line @next/next/no-img-element
                                     <img src={imagePreview} alt="Preview" className="object-cover w-full h-full" />
                                 ) : (
                                     <label className="flex flex-col items-center justify-center text-white/80 cursor-pointer w-full h-full">
                                         <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a1 1 0 001 1h14a1 1 0 001-1v-1M12 12v8m0-8l-3 3m3-3l3 3M12 4v8" />
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                         </svg>
                                         <span className="mt-2">Sube una imagen</span>
                                     </label>
                                 )}
                             </div>
-                            <input type="file" accept="image/*" onChange={handleImageChange} className="mt-2 text-sm text-white/70" />
+                            <input type="file" accept="image/*" onChange={handleImageChange} className="mt-2 text-sm text-white/70 cursor-pointer" />
                         </div>
 
                         <div className="lg:col-span-2">
@@ -174,7 +183,7 @@ export default function RegisterGarmentPage() {
                             </div>
 
                             <div className="mt-6 flex items-center justify-center">
-                                <button disabled={isSaving} className="px-8 py-3 bg-linear-to-r from-blue-600 to-blue-500 text-white rounded-full font-bold shadow-lg disabled:opacity-50">
+                                <button type="submit" disabled={isSaving} className="px-8 py-3 bg-linear-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 disabled:opacity-50 text-white rounded-full font-bold shadow-lg transition-all duration-200">
                                     {isSaving ? 'Guardando...' : 'Guardar Prenda'}
                                 </button>
                             </div>

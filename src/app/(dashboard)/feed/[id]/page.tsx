@@ -1,8 +1,8 @@
 'use client';
 
 import { useParams, useRouter } from 'next/navigation';
-import Link from 'next/link';
 import { useState } from 'react';
+import GarmentCard from '@/src/app/common/components/GarmentCard';
 
 const garmentImageMap: Record<string, string> = {
     'T-Shirt': '/assets/Tshirt.svg',
@@ -16,15 +16,42 @@ const garmentImageMap: Record<string, string> = {
     Accessories: '/assets/Accessorie.svg',
 };
 
+// Mock data for garment details
+const garmentDetails: Record<string, any> = {
+    Jacket: {
+        name: 'Jacket Oversize',
+        brand: 'Zara',
+        type: 'Jacket',
+        uses: 18,
+        colors: ['Gris', 'Negro'],
+        description: 'Elegante y cómodo jacket oversize perfecto para diferentes ocasiones.',
+        outfits: [
+            { id: '1', name: 'Casual Friday' },
+            { id: '2', name: 'Night Out' },
+        ],
+    },
+};
+
 export default function FeedItemPage() {
     const params = useParams();
     const router = useRouter();
     const [isFavorited, setIsFavorited] = useState(false);
     const id = params?.id as string;
     const imageUrl = garmentImageMap[id] || '/assets/Accessorie.svg';
+    
+    // Get garment details from mock data or use defaults
+    const garment = garmentDetails[id] || {
+        name: `${id} Item`,
+        brand: 'Brand',
+        type: id,
+        uses: 0,
+        colors: ['Color'],
+        description: 'Descripción de la prenda',
+        outfits: [],
+    };
 
     return (
-        <main style={{ backgroundColor: '#131620' }} className="min-h-screen">
+        <main className="min-h-screen bg-linear-to-b from-slate-950 via-slate-900 to-slate-950">
             <section className="px-8 md:px-16 py-14">
                 <button
                     onClick={() => router.back()}
@@ -33,55 +60,87 @@ export default function FeedItemPage() {
                     ← Volver
                 </button>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-12 max-w-4xl">
-                    {/* Image */}
-                    <div className="relative h-96 rounded-2xl overflow-hidden bg-gradient-to-br from-gray-700 to-gray-900 flex items-center justify-center">
-                        <img src={imageUrl} alt={id} className="w-full h-full object-cover" />
-                    </div>
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 max-w-6xl">
+                    {/* Left Panel - Details */}
+                    <div className="lg:col-span-1 bg-slate-800/50 backdrop-blur rounded-3xl border border-slate-700/50 p-8">
+                        <h1 className="text-2xl font-bold text-white mb-8">Prenda</h1>
 
-                    {/* Details */}
-                    <div className="flex flex-col justify-between">
-                        <div>
-                            <div className="inline-flex px-4 py-2 bg-blue-500/20 rounded-full mb-6">
-                                <span className="text-blue-300 font-semibold text-sm">{id}</span>
+                        {/* Details Grid */}
+                        <div className="space-y-6 mb-8">
+                            <div>
+                                <div className="text-white/60 text-sm font-medium mb-2">Nombre:</div>
+                                <div className="text-white font-semibold text-lg">{garment.name}</div>
+                            </div>
+                            <div>
+                                <div className="text-white/60 text-sm font-medium mb-2">Marca:</div>
+                                <div className="text-white font-semibold text-lg">{garment.brand}</div>
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <div className="text-white/60 text-sm font-medium mb-2">Tipo:</div>
+                                    <div className="text-white font-semibold">{garment.type}</div>
+                                </div>
+                                <div>
+                                    <div className="text-white/60 text-sm font-medium mb-2">Usos:</div>
+                                    <div className="text-white font-semibold">{garment.uses}</div>
+                                </div>
                             </div>
 
-                            <h1 className="text-4xl font-bold text-white mb-4">{id}</h1>
-
-                            <p className="text-white/70 text-lg mb-8 leading-relaxed">
-                                Esta es una prenda de tu armario. Puedes marcarla como favorita y usarla para crear tus
-                                outfits.
-                            </p>
-
-                            <div className="space-y-4 mb-8">
-                                <div className="flex items-center justify-between">
-                                    <span className="text-white/60">Estado</span>
-                                    <span className="text-white font-semibold">Disponible</span>
-                                </div>
-                                <div className="flex items-center justify-between">
-                                    <span className="text-white/60">Tipo</span>
-                                    <span className="text-white font-semibold">{id}</span>
+                            {/* Colors */}
+                            <div>
+                                <div className="text-white/60 text-sm font-medium mb-3">Colores</div>
+                                <div className="flex flex-wrap gap-2">
+                                    {garment.colors.map((color: string) => (
+                                        <span key={color} className="px-3 py-1 bg-slate-700 text-white text-sm rounded-full">
+                                            {color}
+                                        </span>
+                                    ))}
                                 </div>
                             </div>
                         </div>
 
-                        <div className="flex gap-4">
-                            <button
-                                onClick={() => setIsFavorited(!isFavorited)}
-                                className={`flex-1 px-6 py-3 rounded-2xl font-semibold transition ${
-                                    isFavorited
-                                        ? 'bg-red-500/20 text-red-300 border border-red-500/30'
-                                        : 'bg-white/10 text-white border border-white/20 hover:bg-white/20'
-                                }`}
-                            >
-                                {isFavorited ? '❤ Favorita' : '🤍 Agregar a favoritos'}
+                        {/* Outfits Section */}
+                        <div>
+                            <h3 className="text-white font-bold text-lg mb-4">Outfits donde aparece:</h3>
+                            {garment.outfits.length > 0 ? (
+                                <div className="grid grid-cols-2 gap-3 mb-6">
+                                    {garment.outfits.map((outfit: any) => (
+                                        <div
+                                            key={outfit.id}
+                                            className="relative rounded-2xl overflow-hidden bg-gradient-to-br from-blue-600 to-blue-800 aspect-square cursor-pointer hover:shadow-lg transition"
+                                        >
+                                            <div className="w-full h-full flex items-center justify-center">
+                                                <img src={imageUrl} alt={outfit.name} className="w-full h-full object-cover opacity-75" />
+                                            </div>
+                                            <div className="absolute top-2 left-2 bg-blue-500 text-white text-xs px-2 py-1 rounded-full">
+                                                {garment.type}
+                                            </div>
+                                            <div className="absolute top-2 right-2 text-white text-xl">
+                                                <button className="hover:scale-110 transition">🤍</button>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <p className="text-white/60 text-sm mb-6">No hay outfits aún</p>
+                            )}
+                        </div>
+
+                        {/* Action Buttons */}
+                        <div className="flex gap-3 pt-4 border-t border-slate-700">
+                            <button className="flex-1 px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-full transition">
+                                Editar prenda
                             </button>
-                            <Link
-                                href="/feed"
-                                className="flex-1 px-6 py-3 rounded-2xl font-semibold bg-blue-500 text-white hover:bg-blue-600 transition text-center"
-                            >
-                                Volver al feed
-                            </Link>
+                            <button className="flex-1 px-4 py-3 bg-slate-700 hover:bg-slate-600 text-white font-semibold rounded-full transition">
+                                Eliminar prenda
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Right Panel - Image */}
+                    <div className="lg:col-span-2 flex items-center justify-center">
+                        <div className="relative h-full min-h-96 rounded-3xl overflow-hidden bg-gradient-to-br from-slate-700 to-slate-900 flex items-center justify-center shadow-2xl">
+                            <img src={imageUrl} alt={garment.name} className="w-full h-full object-cover" />
                         </div>
                     </div>
                 </div>

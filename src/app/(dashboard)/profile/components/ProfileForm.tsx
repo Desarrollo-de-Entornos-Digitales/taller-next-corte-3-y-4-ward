@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import AvatarUploader from './AvatarUploader';
+import { useUserStore } from '@/src/lib/zustand/userStore';
 
 interface UserProfile {
     username: string;
@@ -10,64 +11,53 @@ interface UserProfile {
 }
 
 export default function ProfileForm() {
-    const [user, setUser] = useState<UserProfile>({ username: '', email: '', avatar: null });
-    const [username, setUsername] = useState('');
+    const { user, setUser } = useUserStore();
+    const [userProfile, setUserProfile] = useState<UserProfile>({
+        username: user?.username || 'Usuario',
+        email: user?.email || 'usuario@example.com',
+        avatar: user?.avatar || null,
+    });
+    const [username, setUsername] = useState(user?.username || '');
     const [showPassword, setShowPassword] = useState(false);
     const [saving, setSaving] = useState(false);
     const [message, setMessage] = useState<string | null>(null);
 
     useEffect(() => {
-        // Intentar obtener el usuario real desde la API; si falla, fallback a localStorage
-        let mounted = true;
-        try {
-            const raw = localStorage.getItem('current_user');
-            if (raw) {
-                const parsed = JSON.parse(raw);
-                setUser({
-                    username: parsed.username || 'Usuario',
-                    email: parsed.email || 'usuario@example.com',
-                    avatar: parsed.avatar || localStorage.getItem('user_avatar') || null,
-                });
-                setUsername(parsed.username || '');
-            }
-        } catch (e) {
-            // ignore
+        if (user) {
+            const profile: UserProfile = {
+                username: user.username || 'Usuario',
+                email: user.email || 'usuario@example.com',
+                avatar: user.avatar || null,
+            };
+            setUserProfile(profile);
+            setUsername(profile.username);
         }
-
-        // Then try to refresh from API
-        (async () => {
-            try {
-                const { userService } = await import('@/src/app/common/services/user.service');
-                const apiUser = await userService.getCurrentUser();
-                if (!mounted) return;
-                if (apiUser) {
-                    const normalized = {
-                        username: apiUser.username || apiUser.email || 'Usuario',
-                        email: apiUser.email || 'usuario@example.com',
-                        avatar: apiUser.avatar || localStorage.getItem('user_avatar') || null,
-                    };
-                    setUser(normalized);
-                    setUsername(normalized.username);
-                    try { localStorage.setItem('current_user', JSON.stringify(normalized)); } catch (e) {}
-                }
-            } catch (e) {
-                // ignore API errors — we already showed fallback
-            }
-        })();
-
-        return () => { mounted = false; };
-    }, []);
+    }, [user]);
 
     const handleSave = () => {
         setSaving(true);
         setMessage(null);
-        // Simular petición: guardar en localStorage
+        // Guardar en store y localStorage
         setTimeout(() => {
-            const updated = { ...user, username, avatar: localStorage.getItem('user_avatar') || user.avatar };
+            const updatedProfile: UserProfile = {
+                ...userProfile,
+                username: username,
+                avatar: userProfile.avatar,
+            };
+            setUserProfile(updatedProfile);
+            
+            // Update Zustand store
+            setUser({
+                id: user?.id || '1',
+                username: username,
+                email: userProfile.email,
+                avatar: updatedProfile.avatar || undefined,
+                roleId: user?.roleId || 1,
+            });
+            
             try {
-                localStorage.setItem('current_user', JSON.stringify(updated));
+                localStorage.setItem('current_user', JSON.stringify(updatedProfile));
             } catch (e) {}
-            setUser(updated);
             setSaving(false);
             setMessage('Perfil guardado');
             setTimeout(() => setMessage(null), 2500);
@@ -75,7 +65,15 @@ export default function ProfileForm() {
     };
 
     const handleAvatarChange = (dataUrl: string | null) => {
-        setUser((prev) => ({ ...prev, avatar: dataUrl }));
+        setUserProfile((prev) => ({ ...prev, avatar: dataUrl }));
+        // Actualizar inmediatamente el store de Zustand
+        setUser({
+            id: user?.id || '1',
+            username: user?.username || username,
+            email: user?.email || 'usuario@example.com',
+            avatar: dataUrl || undefined,
+            roleId: user?.roleId || 1,
+        });
     };
 
     return (
@@ -85,7 +83,7 @@ export default function ProfileForm() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                     <label className="block text-sm text-white/80 mb-2">Foto de perfil</label>
-                    <AvatarUploader avatarUrl={user.avatar} onChange={handleAvatarChange} />
+                    <AvatarUploader avatarUrl={userProfile.avatar} onChange={handleAvatarChange} />
                 </div>
 
                 <div className="space-y-4">
@@ -101,7 +99,7 @@ export default function ProfileForm() {
 
                     <div>
                         <label className="block text-sm text-white/80 mb-2">Correo</label>
-                        <div className="w-full rounded-2xl border border-slate-600 bg-slate-900 px-4 py-3 text-white/80">{user.email}</div>
+                        <div className="w-full rounded-2xl border border-slate-600 bg-slate-900 px-4 py-3 text-white/80">{userProfile.email}</div>
                     </div>
 
                     <div>

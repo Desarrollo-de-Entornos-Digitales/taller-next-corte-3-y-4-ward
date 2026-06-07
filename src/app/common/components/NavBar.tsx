@@ -4,10 +4,12 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import logoutAction from "../../logout.action";
+import { useUserStore } from "@/src/lib/zustand/userStore";
 
 export default function NavBar() {
   const router = useRouter();
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const { user } = useUserStore();
 
   useEffect(() => {
     try {
@@ -117,19 +119,13 @@ export default function NavBar() {
           {/* Avatar dropdown */}
           <div className="dropdown dropdown-end">
             <div tabIndex={0} role="button" className="btn btn-ghost btn-circle avatar hover:ring-2 hover:ring-blue-400 transition-all">
-              <div className="w-10 rounded-full overflow-hidden ring-2 ring-white/20 bg-base-200">
-                {avatarUrl ? (
-                  <img src={avatarUrl} alt="User avatar" width={40} height={40} className="object-cover w-10 h-10" />
+              <div className="w-10 rounded-full overflow-hidden ring-2 ring-white/20 bg-gradient-to-br from-blue-600 to-blue-800 flex items-center justify-center">
+                {user?.avatar || avatarUrl ? (
+                  <img src={user?.avatar || avatarUrl || ''} alt="User avatar" width={40} height={40} className="object-cover w-10 h-10" />
                 ) : (
-                  <Image
-                    src="/file.svg"
-                    alt="User avatar"
-                    width={40}
-                    height={40}
-                    loading="eager"
-                    style={{ width: 40, height: 'auto' }}
-                    className="object-cover"
-                  />
+                  <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6 text-white" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+                  </svg>
                 )}
               </div>
             </div>

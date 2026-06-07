@@ -10,6 +10,7 @@ import GoogleIcon from '@mui/icons-material/Google';
 import SocialButton from '../../common/components/SocialButton';
 
 import registerAction from './register.action';
+import { useUserStore } from '@/src/lib/zustand/userStore';
 
 export default function RegisterPage() {
     const formRef = useRef<HTMLFormElement>(null);
@@ -17,6 +18,7 @@ export default function RegisterPage() {
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [error, setError] = useState<string | null>(null);
+    const { setUser } = useUserStore();
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -34,6 +36,14 @@ export default function RegisterPage() {
         try {
             const result = await registerAction(email, passwordValue);
             if (result.success) {
+                // Set user in Zustand store with hardcoded data
+                setUser({
+                    id: '1',
+                    username: email.split('@')[0],
+                    email: email,
+                    avatar: null,
+                    roleId: 1,
+                });
                 router.push('/feed');
             } else {
                 setError(result.error);

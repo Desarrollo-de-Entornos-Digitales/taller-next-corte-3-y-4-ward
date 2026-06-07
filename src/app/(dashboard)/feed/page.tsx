@@ -1,17 +1,26 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Banner from '../../common/components/Banner';
 import AddGarmentCard from '../../common/components/AddGarmentCard';
 import FilterPanel from '../../common/components/FilterPanel';
 import GarmentCard from '../../common/components/GarmentCard';
 import { useGarments } from '../../common/hooks/useGarments';
+import { useGarmentStore } from '@/src/lib/zustand/garmentStore';
 import { garmentTypes } from '../../../util/garments.util';
 
 export default function FeedPage() {
     const { garments, loading, error, isAuthenticated, isUsingMockData } = useGarments();
+    const { setGarments } = useGarmentStore();
     const [favorites, setFavorites] = useState<Set<string>>(new Set());
     const [pendingType, setPendingType] = useState<string | null>(null);
     const [activeType, setActiveType] = useState<string | null>(null);
+
+    // Sync garments to Zustand store
+    useEffect(() => {
+        if (garments.length > 0) {
+            setGarments(garments);
+        }
+    }, [garments, setGarments]);
 
     const handleFavorite = (id: string, isFavorited: boolean) => {
         setFavorites((prev) => {

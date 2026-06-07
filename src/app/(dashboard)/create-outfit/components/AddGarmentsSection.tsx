@@ -8,7 +8,7 @@ import { garmentTypes } from '@/src/util/garments.util';
 interface AddGarmentsSectionProps {
     availableGarments: Garment[];
     selectedGarmentIds: string[];
-    onAddGarment: (garment: Garment) => void;
+    onToggleGarment: (garmentId: string) => void;
 }
 
 // Use centralized garmentTypes from util to ensure consistency
@@ -16,7 +16,7 @@ interface AddGarmentsSectionProps {
 export default function AddGarmentsSection({
     availableGarments,
     selectedGarmentIds,
-    onAddGarment,
+    onToggleGarment,
 }: AddGarmentsSectionProps) {
     const [activeCategory, setActiveCategory] = useState<string>(garmentTypes[0] || 'T-Shirt');
     const [searchQuery, setSearchQuery] = useState('');
@@ -80,7 +80,7 @@ export default function AddGarmentsSection({
                                     />
                                 </div>
                                 <button
-                                    onClick={() => onAddGarment(garment)}
+                                    onClick={() => onToggleGarment(garment.id)}
                                     disabled={isSelected}
                                     className={`absolute bottom-2 right-2 z-10 rounded-full p-2 transition-all duration-200 ${
                                         isSelected
