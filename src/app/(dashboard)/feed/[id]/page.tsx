@@ -5,19 +5,15 @@ import Link from 'next/link';
 import { useState } from 'react';
 
 const garmentImageMap: Record<string, string> = {
-    Jacket: '/assets/Jacket.svg',
+    'T-Shirt': '/assets/Tshirt.svg',
     Shirt: '/assets/Shirt.svg',
     Pants: '/assets/pants.svg',
-    'T-Shirt': '/assets/Tshirt.svg',
+    Jacket: '/assets/Jacket.svg',
     Sweater: '/assets/Sweater.svg',
     Dress: '/assets/Dress.svg',
     Skirt: '/assets/Skirt.svg',
     Shoes: '/assets/Shoes.svg',
-    Accessorie: '/assets/Accessorie.svg',
-    Hoodie: '/assets/Accessorie.svg',
-    Polo: '/assets/Shirt.svg',
-    Blazer: '/assets/Jacket.svg',
-    Shorts: '/assets/Accessorie.svg',
+    Accessories: '/assets/Accessorie.svg',
 };
 
 export default function FeedItemPage() {

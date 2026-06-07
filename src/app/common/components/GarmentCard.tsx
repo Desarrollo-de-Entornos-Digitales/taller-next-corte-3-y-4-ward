@@ -15,19 +15,15 @@ interface GarmentCardProps {
 }
 
 const garmentImageMap: Record<string, string> = {
-    Jacket: '/assets/Jacket.svg',
+    'T-Shirt': '/assets/Tshirt.svg',
     Shirt: '/assets/Shirt.svg',
     Pants: '/assets/pants.svg',
-    'T-Shirt': '/assets/Tshirt.svg',
+    Jacket: '/assets/Jacket.svg',
     Sweater: '/assets/Sweater.svg',
     Dress: '/assets/Dress.svg',
     Skirt: '/assets/Skirt.svg',
     Shoes: '/assets/Shoes.svg',
-    Accessorie: '/assets/Accessorie.svg',
-    Hoodie: '/assets/Accessorie.svg',
-    Polo: '/assets/Shirt.svg',
-    Blazer: '/assets/Jacket.svg',
-    Shorts: '/assets/Accessorie.svg',
+    Accessories: '/assets/Accessorie.svg',
 };
 
 function getGarmentImage(label: string): string {
@@ -72,7 +68,7 @@ export default function GarmentCard({
 
                     {/* Image Section */}
                     <div className="relative w-full aspect-square overflow-hidden px-6 pb-6">
-                        <div className="relative w-full h-full rounded-2xl overflow-hidden bg-gradient-to-br from-gray-700 to-gray-900 flex items-center justify-center">
+                        <div className="relative w-full h-full rounded-2xl overflow-hidden bg-linear-to-br from-gray-700 to-gray-900 flex items-center justify-center">
                             <img src={imageUrl} alt={imageAlt} className="w-full h-full object-cover" />
                         </div>
                     </div>

@@ -31,6 +31,7 @@ export default function NavBar() {
     { label: "Mis Prendas", href: "/my-garments" },
     { label: "Registrar Prenda", href: "/register-garment" },
     { label: "Crear Outfit", href: "/create-outfit" },
+    { label: "Mis Outifts", href: "/my-outfits" },
   ];
 
   const handleLogout = async () => {
@@ -118,9 +119,6 @@ export default function NavBar() {
             <div tabIndex={0} role="button" className="btn btn-ghost btn-circle avatar hover:ring-2 hover:ring-blue-400 transition-all">
               <div className="w-10 rounded-full overflow-hidden ring-2 ring-white/20 bg-base-200">
                 {avatarUrl ? (
-                  // Use a normal img when data URL present to avoid next/image optimization issues
-                  // with base64 strings; keep same sizing
-                  // eslint-disable-next-line @next/next/no-img-element
                   <img src={avatarUrl} alt="User avatar" width={40} height={40} className="object-cover w-10 h-10" />
                 ) : (
                   <Image

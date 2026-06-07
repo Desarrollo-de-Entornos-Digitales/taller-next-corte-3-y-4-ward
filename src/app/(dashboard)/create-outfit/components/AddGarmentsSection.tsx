@@ -3,6 +3,7 @@
 import { useState, useMemo } from 'react';
 import { Garment } from '@/src/app/common/services/garment.service';
 import GarmentCard from '@/src/app/common/components/GarmentCard';
+import { garmentTypes } from '@/src/util/garments.util';
 
 interface AddGarmentsSectionProps {
     availableGarments: Garment[];
@@ -10,28 +11,14 @@ interface AddGarmentsSectionProps {
     onAddGarment: (garment: Garment) => void;
 }
 
-const garmentTypes = [
-    'Sweater',
-    'Jacket',
-    'Pants',
-    'Shoes',
-    'Accessorie',
-    'Shirt',
-    'T-Shirt',
-    'Dress',
-    'Skirt',
-    'Hoodie',
-    'Polo',
-    'Blazer',
-    'Shorts',
-];
+// Use centralized garmentTypes from util to ensure consistency
 
 export default function AddGarmentsSection({
     availableGarments,
     selectedGarmentIds,
     onAddGarment,
 }: AddGarmentsSectionProps) {
-    const [activeCategory, setActiveCategory] = useState<string>('Sweater');
+    const [activeCategory, setActiveCategory] = useState<string>(garmentTypes[0] || 'T-Shirt');
     const [searchQuery, setSearchQuery] = useState('');
 
     const filteredGarments = useMemo(() => {

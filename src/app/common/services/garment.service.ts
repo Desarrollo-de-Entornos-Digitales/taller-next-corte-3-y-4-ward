@@ -34,6 +34,20 @@ class GarmentService {
             return getMockGarments();
         }
     }
+
+    async createGarment(formData: FormData): Promise<Garment> {
+        try {
+            const response = await axiosClient.post<Garment>('/garments', formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+            return response.data;
+        } catch (error: any) {
+            console.error('Error creating garment:', error);
+            throw new Error(error?.response?.data?.message || error?.message || 'Failed to create garment');
+        }
+    }
 }
 
 export const garmentService = new GarmentService();
