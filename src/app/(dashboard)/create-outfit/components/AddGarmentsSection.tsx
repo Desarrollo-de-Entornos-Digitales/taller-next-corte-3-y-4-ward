@@ -40,7 +40,7 @@ export default function AddGarmentsSection({
             const matchesSearch =
                 searchQuery === '' ||
                 garment.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                garment.brand?.toLowerCase().includes(searchQuery.toLowerCase());
+                garment.brand?.name?.toLowerCase().includes(searchQuery.toLowerCase());
             return matchesCategory && matchesSearch;
         });
     }, [availableGarments, activeCategory, searchQuery]);
@@ -87,7 +87,7 @@ export default function AddGarmentsSection({
                                 <div className="opacity-75 group-hover:opacity-100 transition-opacity duration-200">
                                     <GarmentCard
                                         id={garment.id}
-                                        image={garment.image}
+                                        image={garment.image_url}
                                         label={garment.type}
                                         isFavorited={false}
                                     />

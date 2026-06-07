@@ -34,6 +34,8 @@ export default function RegisterPage() {
         try {
             const result = await registerAction(email, passwordValue);
             if (result.success) {
+                localStorage.setItem('token', result.data.access_token);
+                localStorage.setItem('isNewUser', 'true');
                 router.push('/feed');
             } else {
                 setError(result.error);
@@ -74,6 +76,7 @@ export default function RegisterPage() {
                     className="w-full flex flex-col gap-4"
                 >
                     {error && <div className="text-red-500 text-sm text-center">{error}</div>}
+
                     <div>
                         <label className="block text-sm text-white/90 mb-1">Username / Email address</label>
                         <input

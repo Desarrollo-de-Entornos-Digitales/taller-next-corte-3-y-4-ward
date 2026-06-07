@@ -1,38 +1,30 @@
 import axiosClient from '../../../lib/axios/client';
-import { getMockGarments } from '../../../util/garments.util';
 
 export interface Garment {
     id: string;
     type: string;
     name?: string;
-    description?: string;
-    image?: string;
-    brand?: string;
-    color?: string;
+    image_url?: string;
+    brand?: { id: number; name: string };
+    garment_type?: { id: number; name: string };
+    garmentColors?: { color: { id: number; name: string } }[];
+    use_count?: number;
     createdAt?: string;
     updatedAt?: string;
-}
-
-interface GarmentsResponse {
-    garments?: Garment[];
+    color?: string;
+    description?: string;
+    image?: string;
 }
 
 class GarmentService {
+    async getGarmentsByUser(userId: number): Promise<Garment[]> {
+        const result = await axiosClient.get<Garment[]>(`/garments/user/${userId}`);
+        return result.data;
+    }
+
     async getGarments(): Promise<Garment[]> {
-        try {
-            const result = await axiosClient.get<GarmentsResponse | Garment[]>('/garments');
-            if (Array.isArray(result.data)) {
-                return result.data;
-            }
-            return result.data.garments || [];
-        } catch (error: any) {
-            if (error.response?.status === 401) {
-                console.warn('Authentication required to fetch garments');
-                return [];
-            }
-            console.warn('Network or API error fetching garments, using mock data fallback:', error?.message || error);
-            return getMockGarments();
-        }
+        const result = await axiosClient.get<Garment[]>(`/garments`);
+        return result.data;
     }
 }
 

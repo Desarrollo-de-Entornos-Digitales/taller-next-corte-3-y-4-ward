@@ -1,34 +1,49 @@
 import { useState, useEffect } from 'react';
+
 import { garmentService, Garment } from '../services/garment.service';
-import { getMockGarments } from '../../../util/garments.util';
+
+function getUserIdFromToken(): number | null {
+    if (typeof window === 'undefined') return null;
+    const token = localStorage.getItem('token');
+    if (!token) return null;
+    try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        return payload.sub ?? null;
+    } catch {
+        return null;
+    }
+}
 
 export const useGarments = () => {
     const [garments, setGarments] = useState<Garment[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const [isAuthenticated, setIsAuthenticated] = useState(true);
-    const [isUsingMockData, setIsUsingMockData] = useState(false);
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const [userId, setUserId] = useState<number | null>(null);
 
     const fetchGarments = async () => {
         try {
             setLoading(true);
             setError(null);
-            setIsUsingMockData(false);
-            const data = await garmentService.getGarments();
-            setGarments(data);
+
+            const id = getUserIdFromToken();
+            if (!id) {
+                setIsAuthenticated(false);
+                setLoading(false);
+                return;
+            }
+
+            setUserId(id);
             setIsAuthenticated(true);
+
+            const data = await garmentService.getGarmentsByUser(id);
+            setGarments(data);
         } catch (err: any) {
             if (err.response?.status === 401) {
-                setError('Authentication required');
                 setIsAuthenticated(false);
+                setError('Authentication required');
             } else {
-                // Usar datos mock como fallback
-                console.warn('Using mock garments data as fallback');
-                const mockData = getMockGarments();
-                setGarments(mockData);
-                setIsUsingMockData(true);
-                setError(null);
-                setIsAuthenticated(true);
+                setError('Error loading garments');
             }
             console.error('Error fetching garments:', err);
         } finally {
@@ -45,7 +60,7 @@ export const useGarments = () => {
         loading,
         error,
         isAuthenticated,
-        isUsingMockData,
+        userId,
         refetch: fetchGarments,
     };
 };

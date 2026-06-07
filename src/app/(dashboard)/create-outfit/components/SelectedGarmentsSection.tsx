@@ -8,10 +8,7 @@ interface SelectedGarmentsSectionProps {
     onRemoveGarment: (garmentId: string) => void;
 }
 
-export default function SelectedGarmentsSection({
-    garments,
-    onRemoveGarment,
-}: SelectedGarmentsSectionProps) {
+export default function SelectedGarmentsSection({ garments, onRemoveGarment }: SelectedGarmentsSectionProps) {
     if (garments.length === 0) {
         return (
             <div className="w-full">
@@ -31,7 +28,7 @@ export default function SelectedGarmentsSection({
                     <div key={garment.id} className="relative group">
                         <GarmentCard
                             id={garment.id}
-                            image={garment.image}
+                            image={garment.image_url}
                             label={garment.type}
                             isFavorited={false}
                         />

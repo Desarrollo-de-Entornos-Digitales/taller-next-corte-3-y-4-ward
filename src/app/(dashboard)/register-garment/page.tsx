@@ -37,8 +37,8 @@ export default function RegisterGarmentPage() {
                         </h2>
                     </div>
                     <p className="text-white/80 text-base md:text-lg max-w-sm md:mt-8 leading-relaxed">
-                        Aquí puedes ver las prendas más destacadas. En cuanto implementemos el registro completo,
-                        esta sección mostrará la nueva prenda creada.
+                        Aquí puedes ver las prendas más destacadas. En cuanto implementemos el registro completo, esta
+                        sección mostrará la nueva prenda creada.
                     </p>
                 </div>
 
@@ -57,8 +57,9 @@ export default function RegisterGarmentPage() {
                         {garments.map((garment) => (
                             <GarmentCard
                                 key={garment.id}
+                                id={garment.id}
                                 label={garment.type}
-                                image={garment.image}
+                                image={garment.image_url}
                                 imageAlt={garment.name || garment.type}
                                 isFavorited={false}
                             />

@@ -37,17 +37,16 @@ export default function FavoritesGrid() {
             {loading ? (
                 <div className="text-white/70">Cargando...</div>
             ) : favoriteGarments.length === 0 ? (
-                <div className="bg-slate-800/50 rounded-2xl border border-slate-700 p-6 text-white/60">No tienes prendas favoritas aún.</div>
+                <div className="bg-slate-800/50 rounded-2xl border border-slate-700 p-6 text-white/60">
+                    No tienes prendas favoritas aún.
+                </div>
             ) : (
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
                     {favoriteGarments.map((g: Garment) => (
                         <div key={g.id} className="relative group">
-                            <GarmentCard id={g.id} image={g.image} label={g.type} isFavorited={true} />
+                            <GarmentCard id={g.id} image={g.image_url} label={g.type} isFavorited={true} />
                             <div className="absolute top-2 right-2 z-10">
-                                <FavoriteButton
-                                    isFavorited={true}
-                                    onToggle={(isFav) => toggleFavorite(g.id, !isFav)}
-                                />
+                                <FavoriteButton isFavorited={true} onToggle={(isFav) => toggleFavorite(g.id, !isFav)} />
                             </div>
                         </div>
                     ))}
