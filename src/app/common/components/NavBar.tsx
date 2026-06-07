@@ -1,11 +1,31 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import logoutAction from "../../logout.action";
 
 export default function NavBar() {
   const router = useRouter();
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem('user_avatar');
+      if (stored) setAvatarUrl(stored);
+    } catch (e) {
+      setAvatarUrl(null);
+    }
+
+    const onStorage = (ev: StorageEvent) => {
+      if (ev.key === 'user_avatar') {
+        setAvatarUrl(ev.newValue);
+      }
+    };
+
+    window.addEventListener('storage', onStorage);
+    return () => window.removeEventListener('storage', onStorage);
+  }, []);
 
   const navLinks = [
     { label: "Mis Prendas", href: "/my-garments" },
@@ -20,8 +40,8 @@ export default function NavBar() {
   };
 
   return (
-    <div className="absolute top-6 left-1/2 -translate-x-1/2 z-50 w-[90%] max-w-4xl">
-      <div className="navbar bg-base-300/60 backdrop-blur-md rounded-full px-6 shadow-lg border border-white/10">
+    <div className="sticky top-6 z-50 w-[90%] max-w-4xl mx-auto">
+      <div className="navbar bg-slate-900/40 backdrop-blur-md rounded-full px-6 shadow-lg border border-white/10">
         {/* Logo */}
         <div className="navbar-start">
           <button
@@ -70,7 +90,7 @@ export default function NavBar() {
             </div>
             <ul
               tabIndex={0}
-              className="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-300 rounded-box w-52"
+              className="menu menu-sm dropdown-content mt-3 z-1 p-2 shadow bg-base-300 rounded-box w-52"
             >
               {navLinks.map((link) => (
                 <li key={link.href}>
@@ -97,20 +117,27 @@ export default function NavBar() {
           <div className="dropdown dropdown-end">
             <div tabIndex={0} role="button" className="btn btn-ghost btn-circle avatar hover:ring-2 hover:ring-blue-400 transition-all">
               <div className="w-10 rounded-full overflow-hidden ring-2 ring-white/20 bg-base-200">
-                <Image
-                  src="/file.svg"
-                  alt="User avatar"
-                  width={40}
-                  height={40}
-                  loading="eager"
-                  style={{ width: 40, height: 'auto' }}
-                  className="object-cover"
-                />
+                {avatarUrl ? (
+                  // Use a normal img when data URL present to avoid next/image optimization issues
+                  // with base64 strings; keep same sizing
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={avatarUrl} alt="User avatar" width={40} height={40} className="object-cover w-10 h-10" />
+                ) : (
+                  <Image
+                    src="/file.svg"
+                    alt="User avatar"
+                    width={40}
+                    height={40}
+                    loading="eager"
+                    style={{ width: 40, height: 'auto' }}
+                    className="object-cover"
+                  />
+                )}
               </div>
             </div>
             <ul
               tabIndex={0}
-              className="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-300 rounded-box w-52"
+              className="menu menu-sm dropdown-content mt-3 z-1 p-2 shadow bg-base-300 rounded-box w-52"
             >
               <li>
                 <button

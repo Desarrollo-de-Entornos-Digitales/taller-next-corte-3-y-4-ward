@@ -32,6 +32,18 @@ export default function LoginPage() {
         try {
             const result = await loginAction(email, password);
             localStorage.setItem('token', result.access_token);
+
+            // Try to fetch current user and cache it locally
+            try {
+                const { userService } = await import('@/src/app/common/services/user.service');
+                const apiUser = await userService.getCurrentUser();
+                if (apiUser) {
+                    try { localStorage.setItem('current_user', JSON.stringify(apiUser)); } catch (e) {}
+                }
+            } catch (e) {
+                // ignore
+            }
+
             router.push('/feed');
         } catch (error: unknown) {
             console.error('Login error:', error);
