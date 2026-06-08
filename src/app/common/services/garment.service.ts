@@ -1,19 +1,18 @@
 import axiosClient from '../../../lib/axios/client';
 
 export interface Garment {
-    id: string;
-    type: string;
-    name?: string;
+    id: number | string;
+    name: string;
     image_url?: string;
-    brand?: { id: number; name: string };
-    garment_type?: { id: number; name: string };
-    garmentColors?: { color: { id: number; name: string } }[];
     use_count?: number;
+    brand?: { id: number; name: string } | null;
+    garment_type?: { id: number; name: string } | null;
+    type?: string | null; // legacy
+    garment_colors?: { color: { id: number; name: string } }[];
+    description?: string | null;
+    color?: string | null;
     createdAt?: string;
     updatedAt?: string;
-    color?: string;
-    description?: string;
-    image?: string;
 }
 
 class GarmentService {
@@ -27,13 +26,14 @@ class GarmentService {
         return result.data;
     }
 
-    async createGarment(formData: FormData): Promise<Garment> {
+    async getGarment(id: string | number): Promise<Garment> {
+        const result = await axiosClient.get<Garment>(`/garments/${id}`);
+        return result.data;
+    }
+
+    async createGarment(data: Record<string, unknown>): Promise<Garment> {
         try {
-            const response = await axiosClient.post<Garment>('/garments', formData, {
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                },
-            });
+            const response = await axiosClient.post<Garment>('/garments', data);
             return response.data;
         } catch (error: any) {
             console.error('Error creating garment:', error);

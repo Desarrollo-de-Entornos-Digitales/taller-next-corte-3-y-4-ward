@@ -50,7 +50,9 @@ export default function LoginPage() {
                 const apiUser = await userService.getCurrentUser();
                 if (apiUser) {
                     setUser(apiUser);
-                    try { localStorage.setItem('current_user', JSON.stringify(apiUser)); } catch (e) {}
+                    try {
+                        localStorage.setItem('current_user', JSON.stringify(apiUser));
+                    } catch (e) {}
                 }
             } catch (e) {
                 // ignore
@@ -88,7 +90,6 @@ export default function LoginPage() {
                         width={220}
                         height={100}
                         loading="eager"
-                        style={{ width: 220, height: 'auto' }}
                         className="object-contain"
                     />
                 </div>

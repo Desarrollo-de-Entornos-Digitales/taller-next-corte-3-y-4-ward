@@ -29,7 +29,7 @@ export default function FavoritesGrid() {
         });
     };
 
-    const favoriteGarments = garments.filter((g) => favorites.includes(g.id));
+    const favoriteGarments = garments.filter((g) => favorites.includes(String(g.id)));
 
     return (
         <div className="mt-8">
@@ -44,9 +44,20 @@ export default function FavoritesGrid() {
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
                     {favoriteGarments.map((g: Garment) => (
                         <div key={g.id} className="relative group">
-                            <GarmentCard id={g.id} image={g.image_url} label={g.type} isFavorited={true} />
+                            <GarmentCard
+                                id={String(g.id)}
+                                image={g.image_url}
+                                label={g.type || g.garment_type?.name || ''}
+                                name={g.name}
+                                brandName={g.brand?.name}
+                                colors={g.garment_colors?.map((gc) => gc.color?.name).filter(Boolean) as string[]}
+                                isFavorited={true}
+                            />
                             <div className="absolute top-2 right-2 z-10">
-                                <FavoriteButton isFavorited={true} onToggle={(isFav) => toggleFavorite(g.id, !isFav)} />
+                                <FavoriteButton
+                                    isFavorited={true}
+                                    onToggle={(isFav) => toggleFavorite(String(g.id), !isFav)}
+                                />
                             </div>
                         </div>
                     ))}

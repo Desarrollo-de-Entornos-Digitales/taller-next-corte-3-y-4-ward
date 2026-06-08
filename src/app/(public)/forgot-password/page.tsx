@@ -103,7 +103,6 @@ export default function ForgotPasswordPage() {
                         width={220}
                         height={100}
                         loading="eager"
-                        style={{ width: 220, height: 'auto' }}
                         className="object-contain"
                     />
                 </div>

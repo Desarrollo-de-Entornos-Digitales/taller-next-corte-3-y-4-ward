@@ -1,13 +1,15 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
-import { garmentService, Garment } from '../services/garment.service';
+import { useGarmentStore } from '@/src/lib/zustand/garmentStore';
+
+import { garmentService } from '../services/garment.service';
 
 function getUserIdFromToken(): number | null {
     if (typeof window === 'undefined') return null;
     const token = localStorage.getItem('token');
     if (!token) return null;
     try {
-        const payload = JSON.parse(atob(token.split('.')[1]));
+        const payload = JSON.parse(atob(token.split('.')[1])) as { sub?: number | null };
         return payload.sub ?? null;
     } catch {
         return null;
@@ -15,7 +17,7 @@ function getUserIdFromToken(): number | null {
 }
 
 export const useGarments = () => {
-    const [garments, setGarments] = useState<Garment[]>([]);
+    const { garments, setGarments } = useGarmentStore();
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -36,10 +38,11 @@ export const useGarments = () => {
             setUserId(id);
             setIsAuthenticated(true);
 
-            const data = await garmentService.getGarmentsByUser(id);
+            const data = await garmentService.getGarments();
             setGarments(data);
-        } catch (err: any) {
-            if (err.response?.status === 401) {
+        } catch (err: unknown) {
+            const axiosError = err as { response?: { status?: number } };
+            if (axiosError.response?.status === 401) {
                 setIsAuthenticated(false);
                 setError('Authentication required');
             } else {
@@ -52,7 +55,12 @@ export const useGarments = () => {
     };
 
     useEffect(() => {
-        fetchGarments();
+        const loadGarments = async () => {
+            await fetchGarments();
+        };
+
+        void loadGarments();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     return {

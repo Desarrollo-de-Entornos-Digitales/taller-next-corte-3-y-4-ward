@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
+
 import { Garment } from '@/src/app/common/services/garment.service';
 import GarmentCard from '@/src/app/common/components/GarmentCard';
 import { garmentTypes } from '@/src/util/garments.util';
@@ -23,7 +24,8 @@ export default function AddGarmentsSection({
 
     const filteredGarments = useMemo(() => {
         return availableGarments.filter((garment) => {
-            const matchesCategory = garment.type === activeCategory;
+            const garmentCategory = garment.type || garment.garment_type?.name || '';
+            const matchesCategory = garmentCategory === activeCategory;
             const matchesSearch =
                 searchQuery === '' ||
                 garment.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -68,19 +70,26 @@ export default function AddGarmentsSection({
             {filteredGarments.length > 0 ? (
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
                     {filteredGarments.map((garment) => {
-                        const isSelected = selectedGarmentIds.includes(garment.id);
+                        const isSelected = selectedGarmentIds.includes(String(garment.id));
                         return (
                             <div key={garment.id} className="relative group">
                                 <div className="opacity-75 group-hover:opacity-100 transition-opacity duration-200">
                                     <GarmentCard
-                                        id={garment.id}
+                                        id={String(garment.id)}
                                         image={garment.image_url}
-                                        label={garment.type}
+                                        label={garment.type || garment.garment_type?.name || ''}
+                                        name={garment.name}
+                                        brandName={garment.brand?.name}
+                                        colors={
+                                            garment.garment_colors
+                                                ?.map((gc) => gc.color?.name)
+                                                .filter(Boolean) as string[]
+                                        }
                                         isFavorited={false}
                                     />
                                 </div>
                                 <button
-                                    onClick={() => onToggleGarment(garment.id)}
+                                    onClick={() => onToggleGarment(String(garment.id))}
                                     disabled={isSelected}
                                     className={`absolute bottom-2 right-2 z-10 rounded-full p-2 transition-all duration-200 ${
                                         isSelected

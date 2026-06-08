@@ -27,13 +27,16 @@ export default function SelectedGarmentsSection({ garments, onRemoveGarment }: S
                 {garments.map((garment) => (
                     <div key={garment.id} className="relative group">
                         <GarmentCard
-                            id={garment.id}
+                            id={String(garment.id)}
                             image={garment.image_url}
-                            label={garment.type}
+                            label={garment.type || garment.garment_type?.name || ''}
+                            name={garment.name}
+                            brandName={garment.brand?.name}
+                            colors={garment.garment_colors?.map((gc) => gc.color?.name).filter(Boolean) as string[]}
                             isFavorited={false}
                         />
                         <button
-                            onClick={() => onRemoveGarment(garment.id)}
+                            onClick={() => onRemoveGarment(String(garment.id))}
                             className="absolute top-2 right-2 z-10 bg-red-500 hover:bg-red-600 text-white rounded-full p-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
                             aria-label="Remove garment"
                         >

@@ -1,18 +1,17 @@
 'use client';
 import { useState, useEffect } from 'react';
-import Banner from '../../common/components/Banner';
-import AddGarmentCard from '../../common/components/AddGarmentCard';
-import FilterPanel from '../../common/components/FilterPanel';
-import GarmentCard from '../../common/components/GarmentCard';
-import WelcomeModal from '../../common/components/WelcomeModal';
-import { useGarments } from '../../common/hooks/useGarments';
-import { useGarmentStore } from '@/src/lib/zustand/garmentStore';
-import { garmentTypes } from '../../../util/garments.util';
+
+import { garmentTypes } from '@/src/util/garments.util';
+import type { Garment } from '@/src/app/common/services/garment.service';
+import { useGarments } from '@/src/app/common/hooks/useGarments';
+import Banner from '@/src/app/common/components/Banner';
+import AddGarmentCard from '@/src/app/common/components/AddGarmentCard';
+import FilterPanel from '@/src/app/common/components/FilterPanel';
+import GarmentCard from '@/src/app/common/components/GarmentCard';
+import WelcomeModal from '@/src/app/common/components/WelcomeModal';
 
 export default function FeedPage() {
-    const { garments, loading, error, isAuthenticated, isUsingMockData } = useGarments();
-    const { setGarments } = useGarmentStore();
-    const { garments, loading, error, isAuthenticated } = useGarments();
+    const { garments, loading, isAuthenticated } = useGarments();
     const [favorites, setFavorites] = useState<Set<string>>(new Set());
     const [pendingType, setPendingType] = useState<string | null>(null);
     const [activeType, setActiveType] = useState<string | null>(null);
@@ -21,17 +20,11 @@ export default function FeedPage() {
     useEffect(() => {
         const isNewUser = localStorage.getItem('isNewUser');
         if (isNewUser === 'true') {
-            setShowWelcome(true);
+            window.setTimeout(() => setShowWelcome(true), 0);
         }
     }, []);
 
     // Sync garments to Zustand store
-    useEffect(() => {
-        if (garments.length > 0) {
-            setGarments(garments);
-        }
-    }, [garments, setGarments]);
-
     const handleFavorite = (id: string, isFavorited: boolean) => {
         setFavorites((prev) => {
             const newFavorites = new Set(prev);
@@ -70,9 +63,18 @@ export default function FeedPage() {
         );
     }
 
+    const getGarmentColors = (garment: Garment) => {
+        const list = garment.garment_colors
+            ? garment.garment_colors
+                  .map((gc: { color?: { name?: string } }) => gc.color?.name)
+                  .filter((name): name is string => Boolean(name))
+            : [];
+        return [...list, ...(garment.color ? [garment.color] : [])];
+    };
+
     const filteredGarments =
         activeType && activeType !== 'All types'
-            ? garments.filter((g) => g.garment_type?.name === activeType)
+            ? garments.filter((g) => (g.type || g.garment_type?.name) === activeType)
             : garments;
 
     return (
@@ -114,10 +116,17 @@ export default function FeedPage() {
                         filteredGarments.map((garment) => (
                             <GarmentCard
                                 key={garment.id}
-                                id={garment.id}
-                                label={garment.garment_type?.name ?? ''}
-                                isFavorited={favorites.has(garment.id)}
-                                onFavorite={(isFav) => handleFavorite(garment.id, isFav)}
+                                id={String(garment.id)}
+                                label={garment.type || garment.garment_type?.name || ''}
+                                name={garment.name}
+                                brandName={garment.brand?.name}
+                                colors={getGarmentColors(garment)}
+                                image={garment.image_url}
+                                imageAlt={String(
+                                    garment.name || garment.type || garment.garment_type?.name || 'Garment',
+                                )}
+                                isFavorited={favorites.has(String(garment.id))}
+                                onFavorite={(isFav) => handleFavorite(String(garment.id), isFav)}
                             />
                         ))
                     ) : (
