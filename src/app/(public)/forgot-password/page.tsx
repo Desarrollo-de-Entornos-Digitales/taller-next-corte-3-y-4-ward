@@ -1,8 +1,10 @@
 'use client';
 
+export const dynamic = 'force-dynamic';
+
 import Image from 'next/image';
 import Link from 'next/link';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { useRef, useState } from 'react';
 import { useEffect } from 'react';
 
@@ -20,7 +22,6 @@ const getErrorMessage = (error: unknown, fallback: string) => {
 export default function ForgotPasswordPage() {
     const formRef = useRef<HTMLFormElement>(null);
     const router = useRouter();
-    const searchParams = useSearchParams();
 
     const [step, setStep] = useState<Step>('email');
     const [resetToken, setResetToken] = useState<string>('');
@@ -49,10 +50,12 @@ export default function ForgotPasswordPage() {
 
     useEffect(() => {
         // Only allow access when navigated from the login link which sets ?from=login
-        if (searchParams.get('from') !== 'login') {
+        if (typeof window === 'undefined') return;
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('from') !== 'login') {
             router.replace('/login');
         }
-    }, [searchParams, router]);
+    }, [router]);
 
     const handleResetSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();

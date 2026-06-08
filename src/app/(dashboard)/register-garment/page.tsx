@@ -205,6 +205,35 @@ export default function RegisterGarmentPage() {
                         </div>
                     )}
                 </div>
+                        Aquí puedes ver las prendas más destacadas. En cuanto implementemos el registro completo, esta
+                        sección mostrará la nueva prenda creada.
+                    </p>
+                </div>
+
+                {loading ? (
+                    <div className="rounded-3xl bg-slate-950/80 p-10 text-center text-white">Cargando prendas...</div>
+                ) : error ? (
+                    <div className="rounded-3xl bg-rose-500/10 border border-rose-500/20 p-10 text-center text-red-300">
+                        Error al cargar prendas: {error}
+                    </div>
+                ) : garments.length === 0 ? (
+                    <div className="rounded-3xl bg-slate-950/80 p-10 text-center text-white/70">
+                        Aún no hay prendas disponibles.
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        {garments.map((garment) => (
+                            <GarmentCard
+                                key={garment.id}
+                                id={garment.id}
+                                label={garment.type}
+                                image={garment.image_url}
+                                imageAlt={garment.name || garment.type}
+                                isFavorited={false}
+                            />
+                        ))}
+                    </div>
+                )}
             </section>
         </main>
     );
