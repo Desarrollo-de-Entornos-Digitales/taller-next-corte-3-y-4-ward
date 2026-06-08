@@ -40,6 +40,27 @@ class GarmentService {
             throw new Error(error?.response?.data?.message || error?.message || 'Failed to create garment');
         }
     }
+
+    async updateGarment(id: string | number, data: Record<string, unknown>): Promise<Garment> {
+    try {
+        const response = await axiosClient.patch<Garment>(
+            `/garments/${id}`,
+            data,
+        );
+
+        return response.data;
+    } catch (error: any) {
+        console.error('Error updating garment:', error);
+
+        throw new Error(
+            error?.response?.data?.message ||
+                error?.message ||
+                'Failed to update garment',
+        );
+    }
+}
+
+
 }
 
 export const garmentService = new GarmentService();

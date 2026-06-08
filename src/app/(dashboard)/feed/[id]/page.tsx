@@ -90,7 +90,7 @@ export default function FeedItemPage() {
             <section className="px-8 md:px-16 py-14">
                 <button
                     onClick={() => router.back()}
-                    className="mb-8 text-cyan-400 hover:text-cyan-300 font-medium flex items-center gap-2 transition"
+                    className="mb-8 text-blue-700 hover:text-blue-500 font-medium flex items-center gap-2 transition"
                 >
                     ← Volver
                 </button>
@@ -145,9 +145,11 @@ export default function FeedItemPage() {
 
                         {/* Action Buttons */}
                         <div className="flex gap-3 pt-4 border-t border-slate-700">
-                            <button className="flex-1 px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-full transition">
-                                Editar prenda
+                            <button onClick={() => router.push(`/edit-garment/${id}`)}className="flex-1 px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-full transition"
+                             >
+                             Editar prenda
                             </button>
+
                             <button className="flex-1 px-4 py-3 bg-slate-700 hover:bg-slate-600 text-white font-semibold rounded-full transition">
                                 Eliminar prenda
                             </button>
@@ -156,7 +158,7 @@ export default function FeedItemPage() {
 
                     {/* Right Panel - Image */}
                     <div className="lg:col-span-2 flex items-center justify-center">
-                        <div className="relative h-full min-h-96 rounded-3xl overflow-hidden bg-gradient-to-br from-slate-700 to-slate-900 flex items-center justify-center shadow-2xl">
+                        <div className="relative h-full min-h-96 rounded-3xl overflow-hidden bg-linear-to-br from-slate-700 to-slate-900 flex items-center justify-center shadow-2xl">
                             <img src={imageUrl} alt={garment.name || 'Prenda'} className="w-full h-full object-cover" />
                         </div>
                     </div>

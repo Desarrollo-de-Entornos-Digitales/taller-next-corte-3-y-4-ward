@@ -30,7 +30,6 @@ export default function NavBar() {
     }, []);
 
     const navLinks = [
-        { label: 'Mis Prendas', href: '/my-garments' },
         { label: 'Registrar Prenda', href: '/register-garment' },
         { label: 'Crear Outfit', href: '/create-outfit' },
         { label: 'Mis Outifts', href: '/my-outfits' },
@@ -43,18 +42,19 @@ export default function NavBar() {
     };
 
     return (
-        <div className="sticky top-6 z-50 w-[90%] max-w-4xl mx-auto">
+        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-[90%] max-w-4xl">
             <div className="navbar bg-slate-900/40 backdrop-blur-md rounded-full px-6 shadow-lg border border-white/10">
                 {/* Logo */}
                 <div className="navbar-start">
                     <button onClick={() => router.push('/feed')} className="btn btn-ghost hover:bg-transparent px-0">
                         <Image
-                            src="/assets/ward-logo.svg"
-                            alt="WARD logo"
-                            width={80}
-                            height={32}
-                            loading="eager"
-                            className="object-contain"
+                          src="/assets/ward-logo.svg"
+                          alt="WARD logo"
+                          width={80}
+                          height={0}
+                          loading="eager"
+                          style={{ height: "auto" }}
+                          className="object-contain"
                         />
                     </button>
                 </div>
@@ -121,7 +121,7 @@ export default function NavBar() {
                             role="button"
                             className="btn btn-ghost btn-circle avatar hover:ring-2 hover:ring-blue-400 transition-all"
                         >
-                            <div className="w-10 rounded-full overflow-hidden ring-2 ring-white/20 bg-gradient-to-br from-blue-600 to-blue-800 flex items-center justify-center">
+                            <div className="w-10 rounded-full overflow-hidden ring-2 ring-white/20 bg-linear-to-br from-blue-600 to-blue-800 flex items-center justify-center">
                                 {user?.avatar || avatarUrl ? (
                                     <img
                                         src={user?.avatar || avatarUrl || ''}
@@ -147,12 +147,12 @@ export default function NavBar() {
                             className="menu menu-sm dropdown-content mt-3 z-1 p-2 shadow bg-base-300 rounded-box w-52"
                         >
                             <li>
-                                <button onClick={() => router.push('/profile')} className="text- hover:text-slate-200">
+                                <button onClick={() => router.push('/profile')} className="text-black hover:text-black-200">
                                     Mi Perfil
                                 </button>
                             </li>
                             <li>
-                                <button onClick={handleLogout} className="text-red-400 hover:text-red-300">
+                                <button onClick={handleLogout} className="text-blue-600 hover:text-blue-800">
                                     Cerrar Sesión
                                 </button>
                             </li>
