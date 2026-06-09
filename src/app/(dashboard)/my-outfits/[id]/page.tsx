@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 
 import GarmentCard from '@/src/app/common/components/GarmentCard';
+import { getGarmentColors, getGarmentImageUrl } from '@/src/util/garments.util';
 import { useGarments } from '@/src/app/common/hooks/useGarments';
 import { useOutfitStore } from '@/src/lib/zustand/outfitStore';
 
@@ -101,12 +102,12 @@ export default function MyOutfitDetailPage() {
                   <GarmentCard
                     key={String(garment.id)}
                     id={String(garment.id)}
-                    image={garment.image_url}
+                    image={getGarmentImageUrl(garment)}
                     imageAlt={garment.name || garment.type || 'Prenda'}
                     label={garment.type || garment.garment_type?.name || 'Prenda'}
                     name={garment.name}
                     brandName={garment.brand?.name}
-                    colors={garment.garment_colors?.map((gc) => gc.color?.name).filter(Boolean) as string[]}
+                    colors={getGarmentColors(garment)}
                     isFavorited={false}
                   />
                 ))}

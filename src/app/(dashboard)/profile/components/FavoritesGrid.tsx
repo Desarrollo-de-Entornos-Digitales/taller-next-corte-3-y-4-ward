@@ -5,6 +5,7 @@ import { Garment } from '@/src/app/common/services/garment.service';
 import GarmentCard from '@/src/app/common/components/GarmentCard';
 import FavoriteButton from '@/src/app/common/components/FavoriteButton';
 import { useGarments } from '@/src/app/common/hooks/useGarments';
+import { getGarmentColors, getGarmentImageUrl } from '@/src/util/garments.util';
 
 export default function FavoritesGrid() {
     const { garments, loading } = useGarments();
@@ -46,11 +47,11 @@ export default function FavoritesGrid() {
                         <div key={g.id} className="relative group">
                             <GarmentCard
                                 id={String(g.id)}
-                                image={g.image_url}
+                                image={getGarmentImageUrl(g)}
                                 label={g.type || g.garment_type?.name || ''}
                                 name={g.name}
                                 brandName={g.brand?.name}
-                                colors={g.garment_colors?.map((gc) => gc.color?.name).filter(Boolean) as string[]}
+                                colors={getGarmentColors(g)}
                                 isFavorited={true}
                             />
                             <div className="absolute top-2 right-2 z-10">

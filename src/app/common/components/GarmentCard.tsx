@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 
 import FavoriteButton from './FavoriteButton';
+import { resolveGarmentImage } from '@/src/util/garments.util';
 
 interface GarmentCardProps {
     id: string;
@@ -16,52 +17,6 @@ interface GarmentCardProps {
     onFavorite?: (isFavorited: boolean) => void;
     isFavorited?: boolean;
     className?: string;
-}
-
-function normalizeGarmentLabel(label: string): string {
-    return label
-        .trim()
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/gi, ' ')
-        .trim();
-}
-
-function getGarmentImage(label: string): string {
-    const normalized = normalizeGarmentLabel(label);
-
-    const mapping: Record<string, string> = {
-        't shirt': '/assets/Tshirt.svg',
-        tshirt: '/assets/Tshirt.svg',
-        shirt: '/assets/Shirt.svg',
-        camisa: '/assets/Shirt.svg',
-        polo: '/assets/Tshirt.svg',
-        playera: '/assets/Tshirt.svg',
-        remera: '/assets/Tshirt.svg',
-        pants: '/assets/pants.svg',
-        pantalones: '/assets/pants.svg',
-        pantalon: '/assets/pants.svg',
-        jeans: '/assets/pants.svg',
-        jean: '/assets/pants.svg',
-        jacket: '/assets/Jacket.svg',
-        chaqueta: '/assets/Jacket.svg',
-        abrigo: '/assets/Jacket.svg',
-        coat: '/assets/Jacket.svg',
-        sweater: '/assets/Sweater.svg',
-        sueter: '/assets/Sweater.svg',
-        jumper: '/assets/Sweater.svg',
-        dress: '/assets/Dress.svg',
-        vestido: '/assets/Dress.svg',
-        skirt: '/assets/Skirt.svg',
-        falda: '/assets/Skirt.svg',
-        shoes: '/assets/Shoes.svg',
-        sneakers: '/assets/Shoes.svg',
-        zapatillas: '/assets/Shoes.svg',
-        accessories: '/assets/Accessorie.svg',
-        accessory: '/assets/Accessorie.svg',
-        accesorios: '/assets/Accessorie.svg',
-    };
-
-    return mapping[normalized] || '/assets/Accessorie.svg';
 }
 
 export default function GarmentCard({
@@ -77,7 +32,7 @@ export default function GarmentCard({
     className = '',
 }: GarmentCardProps) {
     const [isHovered, setIsHovered] = useState(false);
-    const imageUrl = image || getGarmentImage(label);
+    const imageUrl = resolveGarmentImage(image, label, name);
 
     return (
         <Link href={`/feed/${id}`}>
@@ -116,8 +71,9 @@ export default function GarmentCard({
                                 className="w-full h-full object-contain"
                                 onError={(event) => {
                                     const target = event.currentTarget as HTMLImageElement;
-                                    if (target.src !== '/assets/Accessorie.svg') {
-                                        target.src = '/assets/Accessorie.svg';
+                                    const fallbackUrl = resolveGarmentImage(undefined, label, name);
+                                    if (target.src !== fallbackUrl) {
+                                        target.src = fallbackUrl;
                                     }
                                 }}
                             />

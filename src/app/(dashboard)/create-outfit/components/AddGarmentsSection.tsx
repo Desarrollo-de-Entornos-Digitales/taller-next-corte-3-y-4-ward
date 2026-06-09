@@ -4,7 +4,7 @@ import { useState, useMemo } from 'react';
 
 import { Garment } from '@/src/app/common/services/garment.service';
 import GarmentCard from '@/src/app/common/components/GarmentCard';
-import { garmentTypes } from '@/src/util/garments.util';
+import { garmentTypes, getGarmentColors, getGarmentImageUrl } from '@/src/util/garments.util';
 
 interface AddGarmentsSectionProps {
     availableGarments: Garment[];
@@ -76,7 +76,7 @@ export default function AddGarmentsSection({
                                 <div className="opacity-75 group-hover:opacity-100 transition-opacity duration-200">
                                     <GarmentCard
                                         id={String(garment.id)}
-                                        image={garment.image_url}
+                                        image={getGarmentImageUrl(garment)}
                                         label={garment.type || garment.garment_type?.name || ''}
                                         name={garment.name}
                                         brandName={garment.brand?.name}

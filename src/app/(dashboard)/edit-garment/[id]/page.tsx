@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 
-import { garmentTypes } from '@/src/util/garments.util';
+import { garmentTypes, getGarmentColors, resolveGarmentImage } from '@/src/util/garments.util';
 import { garmentService, Garment } from '@/src/app/common/services/garment.service';
 import { useGarments } from '@/src/app/common/hooks/useGarments';
 
@@ -32,10 +32,7 @@ const uniqueBrands = Array.from(
     new Set(garments.map((g) => g.brand?.name).filter(Boolean))
 ).sort();
 
-const allColors = garments.flatMap((g) => [
-    ...(g.garment_colors?.map((gc) => gc.color?.name) ?? []),
-    g.color,
-]);
+const allColors = garments.flatMap((g) => getGarmentColors(g));
 
 const uniqueColors = Array.from(
     new Set(allColors.filter((c): c is string => Boolean(c)))
@@ -250,7 +247,11 @@ return (
                 <div className="bg-slate-800/50 backdrop-blur rounded-3xl border border-slate-700/50 p-6 flex items-center justify-center">
 
                     <img
-                        src={garment.image_url}
+                        src={resolveGarmentImage(
+                            garment.image_url,
+                            garment.type || garment.garment_type?.name || '',
+                            garment.name,
+                        )}
                         alt={garment.name}
                         className="max-h-150 object-contain rounded-2xl"
                     />

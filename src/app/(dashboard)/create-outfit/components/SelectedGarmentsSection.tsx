@@ -2,6 +2,7 @@
 
 import { Garment } from '@/src/app/common/services/garment.service';
 import GarmentCard from '@/src/app/common/components/GarmentCard';
+import { getGarmentColors, getGarmentImageUrl } from '@/src/util/garments.util';
 
 interface SelectedGarmentsSectionProps {
     garments: Garment[];
@@ -28,11 +29,11 @@ export default function SelectedGarmentsSection({ garments, onRemoveGarment }: S
                     <div key={garment.id} className="relative group">
                         <GarmentCard
                             id={String(garment.id)}
-                            image={garment.image_url}
+                            image={getGarmentImageUrl(garment)}
                             label={garment.type || garment.garment_type?.name || ''}
                             name={garment.name}
                             brandName={garment.brand?.name}
-                            colors={garment.garment_colors?.map((gc) => gc.color?.name).filter(Boolean) as string[]}
+                            colors={getGarmentColors(garment)}
                             isFavorited={false}
                         />
                         <button

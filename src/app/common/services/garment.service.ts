@@ -4,6 +4,7 @@ export interface Garment {
     id: number | string;
     name: string;
     image_url?: string;
+    imageUrl?: string;
     use_count?: number;
     brand?: { id: number; name: string } | null;
     garment_type?: { id: number; name: string } | null;

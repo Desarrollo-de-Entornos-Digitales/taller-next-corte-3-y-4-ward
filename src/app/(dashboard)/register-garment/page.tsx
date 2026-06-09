@@ -4,7 +4,7 @@ import { useState } from 'react';
 
 import { useGarmentStore } from '@/src/lib/zustand/garmentStore';
 import { useGarments } from '@/src/app/common/hooks/useGarments';
-import { garmentTypes, getMockGarments } from '@/src/util/garments.util';
+import { garmentTypes, getMockGarments, getGarmentColors, getGarmentImageUrl } from '@/src/util/garments.util';
 
 import GarmentCard from '../../common/components/GarmentCard';
 import { garmentService } from '../../common/services/garment.service';
@@ -12,11 +12,7 @@ import { garmentService } from '../../common/services/garment.service';
 const mockGarments = getMockGarments();
 const fallbackBrands = Array.from(new Set(mockGarments.map((g) => g.brand?.name).filter(Boolean))).sort();
 const fallbackColors = Array.from(
-    new Set(
-        mockGarments.flatMap((g) => [...(g.garment_colors?.map((gc) => gc.color?.name) ?? []), g.color]).filter(
-            (c): c is string => Boolean(c),
-        ),
-    ),
+    new Set(mockGarments.flatMap((g) => getGarmentColors(g)).filter((c): c is string => Boolean(c))),
 ).sort();
 
 export default function RegisterGarmentPage() {
@@ -68,8 +64,8 @@ export default function RegisterGarmentPage() {
 
     // Extract unique brands and colors from garments
     const uniqueBrands = Array.from(new Set(garments.map((g) => g.brand?.name).filter(Boolean))).sort();
-    const allColors = garments.flatMap((g) => [...(g.garment_colors?.map((gc) => gc.color?.name) ?? []), g.color]);
-    const uniqueColors = Array.from(new Set(allColors.filter((c): c is string => Boolean(c)))).sort();
+    const allColors = garments.flatMap((g) => getGarmentColors(g));
+    const uniqueColors = Array.from(new Set(allColors)).sort();
 
     const brandOptions = uniqueBrands.length ? uniqueBrands : fallbackBrands;
     const colorOptions = uniqueColors.length ? uniqueColors : fallbackColors;
@@ -94,13 +90,15 @@ export default function RegisterGarmentPage() {
             let payload: Record<string, unknown> | FormData;
 
             if (selectedFile) {
-                payload = new FormData();
-                payload.append('name', name);
-                payload.append('brand', brand);
-                payload.append('type', type);
-                payload.append('color', color);
-                payload.append('description', description);
-                payload.append('image', selectedFile);
+                const formData = new FormData();
+                formData.append('name', name);
+                formData.append('brand', brand);
+                formData.append('type', type);
+                formData.append('color', color);
+                formData.append('description', description);
+                formData.append('image', selectedFile);
+                formData.append('file', selectedFile);
+                payload = formData;
             } else {
                 payload = {
                     name,
@@ -302,26 +300,29 @@ export default function RegisterGarmentPage() {
                     <div className="rounded-3xl bg-rose-500/10 border border-rose-500/20 p-10 text-center text-red-300">
                         Error al cargar prendas: {error}
                     </div>
-                ) : garments.length === 0 ? (
-                    <div className="rounded-3xl bg-slate-950/80 p-10 text-center text-white/70">
-                        Aún no hay prendas disponibles.
-                    </div>
                 ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        {garments.map((garment) => (
-                            <GarmentCard
-                                key={garment.id}
-                                id={String(garment.id)}
-                                label={garment.type || garment.garment_type?.name || ''}
-                                name={garment.name}
-                                brandName={garment.brand?.name}
-                                colors={garment.garment_colors?.map((gc) => gc.color?.name).filter(Boolean) as string[]}
-                                image={garment.image_url}
-                                imageAlt={String(garment.name || garment.type || '')}
-                                isFavorited={false}
-                            />
-                        ))}
-                    </div>
+                    <>
+                        {garments.length === 0 && (
+                            <div className="rounded-3xl bg-slate-950/80 p-10 text-center text-white/70 mb-6">
+                                Mostrando prendas predeterminadas con imágenes de ejemplo.
+                            </div>
+                        )}
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            {(garments.length > 0 ? garments : mockGarments).map((garment) => (
+                                <GarmentCard
+                                    key={garment.id}
+                                    id={String(garment.id)}
+                                    label={garment.type || garment.garment_type?.name || ''}
+                                    name={garment.name}
+                                    brandName={garment.brand?.name}
+                                    colors={getGarmentColors(garment)}
+                                    image={getGarmentImageUrl(garment)}
+                                    imageAlt={String(garment.name || garment.type || '')}
+                                    isFavorited={false}
+                                />
+                            ))}
+                        </div>
+                    </>
                 )}
             </section>
         </main>

@@ -2,32 +2,8 @@
 
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import GarmentCard from '@/src/app/common/components/GarmentCard';
 import { garmentService, Garment } from '../../../common/services/garment.service';
-
-const garmentImageMap: Record<string, string> = {
-    'T-Shirt': '/assets/Tshirt.svg',
-    Shirt: '/assets/Shirt.svg',
-    Pants: '/assets/pants.svg',
-    Jacket: '/assets/Jacket.svg',
-    Sweater: '/assets/Sweater.svg',
-    Dress: '/assets/Dress.svg',
-    Skirt: '/assets/Skirt.svg',
-    Shoes: '/assets/Shoes.svg',
-    Accessories: '/assets/Accessorie.svg',
-};
-
-const API_BASE = process.env.NEXT_PUBLIC_API || 'http://localhost:3001';
-
-function resolveImageUrl(image?: string, label?: string) {
-    if (image) {
-        if (image.startsWith('http')) return image;
-        if (image.startsWith('/')) return `${API_BASE}${image}`;
-        return image;
-    }
-    const fallback = garmentImageMap[label || ''] || '/assets/Accessorie.svg';
-    return `${API_BASE}${fallback.startsWith('/') ? fallback : `/${fallback}`}`;
-}
+import { getGarmentColors, getGarmentImageUrl, resolveGarmentImage } from '@/src/util/garments.util';
 
 export default function FeedItemPage() {
     const params = useParams();
@@ -81,9 +57,9 @@ export default function FeedItemPage() {
 
     const typeLabel = garment.garment_type?.name || garment.type || '';
     const brandName = garment.brand?.name || '';
-    const colors = (garment.garment_colors || []).map((gc) => gc?.color?.name).filter(Boolean) as string[];
+    const colors = getGarmentColors(garment);
     const uses = (garment.use_count ?? garment.use_count ?? 0) as number;
-    const imageUrl = resolveImageUrl(garment.image_url || garment.image_url || undefined, typeLabel || undefined);
+    const imageUrl = resolveGarmentImage(getGarmentImageUrl(garment), typeLabel, garment.name);
 
     return (
         <main className="min-h-screen bg-linear-to-b from-slate-950 via-slate-900 to-slate-950 pt-15">

@@ -92,4 +92,60 @@ export const garmentTypes = [
     'Accessories',
 ];
 
+export const GARMENT_IMAGE_MAP: Record<string, string> = {
+    'T-Shirt': '/assets/Tshirt.svg',
+    Shirt: '/assets/Shirt.svg',
+    Pants: '/assets/pants.svg',
+    Jacket: '/assets/Jacket.svg',
+    Sweater: '/assets/Sweater.svg',
+    Dress: '/assets/Dress.svg',
+    Skirt: '/assets/Skirt.svg',
+    Shoes: '/assets/Shoes.svg',
+    Accessories: '/assets/Accessorie.svg',
+};
+
+export function getFallbackGarmentImage(label?: string, name?: string): string {
+    const value = `${label ?? ''} ${name ?? ''}`
+        .trim()
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/gi, ' ')
+        .trim();
+
+    if (/(dress|vestido|gown)/.test(value)) return GARMENT_IMAGE_MAP.Dress;
+    if (/(shoe|shoes|sneakers|zapatillas|sneaker|boot)/.test(value)) return GARMENT_IMAGE_MAP.Shoes;
+    if (/(jacket|chaqueta|abrigo|coat|leather)/.test(value)) return GARMENT_IMAGE_MAP.Jacket;
+    if (/(t shirt|tshirt|shirt|camisa|polo|playera|remera|tee|cotton)/.test(value)) return GARMENT_IMAGE_MAP['T-Shirt'];
+    if (/(pants|pantalones|pantalon|jeans|jean|denim|trouser|slim fit)/.test(value)) return GARMENT_IMAGE_MAP.Pants;
+    if (/(sweater|sueter|jumper|wool)/.test(value)) return GARMENT_IMAGE_MAP.Sweater;
+    if (/(skirt|falda)/.test(value)) return GARMENT_IMAGE_MAP.Skirt;
+    if (/(accessories|accessory|accesorios|cap|hat|bag|corduroy)/.test(value)) return GARMENT_IMAGE_MAP.Accessories;
+
+    return GARMENT_IMAGE_MAP.Accessories;
+}
+
+export function resolveGarmentImage(image?: string, label?: string, name?: string): string {
+    if (image) {
+        const trimmed = image.trim();
+        if (/^https?:\/\//.test(trimmed)) return trimmed;
+        if (trimmed.startsWith('/')) return trimmed;
+        if (trimmed.startsWith('assets/')) return `/${trimmed}`;
+        return trimmed;
+    }
+
+    return getFallbackGarmentImage(label, name);
+}
+
+export function getGarmentImageUrl(garment: Garment): string | undefined {
+    return garment.image_url || garment.imageUrl;
+}
+
+export function getGarmentColors(garment: Garment): string[] {
+    const garmentColors = Array.isArray(garment.garment_colors) ? garment.garment_colors : [];
+    const colors = [
+        ...(garmentColors.map((gc) => gc.color?.name).filter(Boolean) as string[]),
+        ...(garment.color ? [garment.color] : []),
+    ];
+    return Array.from(new Set(colors));
+}
+
 export const getMockGarments = (): Garment[] => mockGarments;

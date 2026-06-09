@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 
-import { garmentTypes } from '@/src/util/garments.util';
+import { garmentTypes, getMockGarments, getGarmentColors, getGarmentImageUrl } from '@/src/util/garments.util';
 import type { Garment } from '@/src/app/common/services/garment.service';
 import { useGarments } from '@/src/app/common/hooks/useGarments';
 import Banner from '@/src/app/common/components/Banner';
@@ -14,7 +14,11 @@ export default function FeedPage() {
     const { garments, loading, isAuthenticated } = useGarments();
     const [favorites, setFavorites] = useState<Set<string>>(new Set());
     const [pendingType, setPendingType] = useState<string | null>(null);
+    const [pendingBrand, setPendingBrand] = useState<string | null>(null);
+    const [pendingColor, setPendingColor] = useState<string | null>(null);
     const [activeType, setActiveType] = useState<string | null>(null);
+    const [activeBrand, setActiveBrand] = useState<string | null>(null);
+    const [activeColor, setActiveColor] = useState<string | null>(null);
     const [showWelcome, setShowWelcome] = useState(false);
 
     useEffect(() => {
@@ -63,19 +67,34 @@ export default function FeedPage() {
         );
     }
 
-    const getGarmentColors = (garment: Garment) => {
-        const list = garment.garment_colors
-            ? garment.garment_colors
-                  .map((gc: { color?: { name?: string } }) => gc.color?.name)
-                  .filter((name): name is string => Boolean(name))
-            : [];
-        return [...list, ...(garment.color ? [garment.color] : [])];
+    const getGarmentColorsFromRecord = (garment: Garment) => {
+        return getGarmentColors(garment);
     };
 
-    const filteredGarments =
-        activeType && activeType !== 'All types'
-            ? garments.filter((g) => (g.type || g.garment_type?.name) === activeType)
-            : garments;
+    const brands = Array.from(
+        new Set(garments.map((g) => g.brand?.name).filter(Boolean)),
+    ).sort() as string[];
+
+    const colors = Array.from(
+        new Set(garments.flatMap((g) => getGarmentColors(g)).filter(Boolean)),
+    ).sort() as string[];
+
+    const filteredGarments = garments.filter((garment) => {
+        const garmentType = garment.type || garment.garment_type?.name || '';
+        const brandName = garment.brand?.name || '';
+        const garmentColors = getGarmentColors(garment);
+
+        if (activeType && activeType !== 'All types' && garmentType !== activeType) {
+            return false;
+        }
+        if (activeBrand && activeBrand !== 'All brands' && brandName !== activeBrand) {
+            return false;
+        }
+        if (activeColor && activeColor !== 'All colors' && !garmentColors.includes(activeColor)) {
+            return false;
+        }
+        return true;
+    });
 
     return (
         <main style={{ backgroundColor: '#131620' }}>
@@ -86,13 +105,29 @@ export default function FeedPage() {
             <section className="px-8 md:px-16 py-14">
                 <FilterPanel
                     types={garmentTypes}
+                    brands={brands.length > 0 ? brands : getMockGarments().map((g) => g.brand?.name ?? '').filter(Boolean) as string[]}
+                    colors={colors.length > 0 ? colors : Array.from(new Set(getMockGarments().flatMap((g) => getGarmentColors(g)))).filter(Boolean) as string[]}
                     selectedType={activeType}
+                    selectedBrand={activeBrand}
+                    selectedColor={activeColor}
                     pendingType={pendingType}
-                    onPendingTypeChange={setPendingType}
-                    onApply={() => setActiveType(pendingType === 'All types' ? null : pendingType)}
+                    pendingBrand={pendingBrand}
+                    pendingColor={pendingColor}
+                    onPendingTypeChange={(value) => setPendingType(value === 'All types' ? null : value)}
+                    onPendingBrandChange={(value) => setPendingBrand(value === 'All brands' ? null : value)}
+                    onPendingColorChange={(value) => setPendingColor(value === 'All colors' ? null : value)}
+                    onApply={() => {
+                        setActiveType(pendingType === 'All types' ? null : pendingType);
+                        setActiveBrand(pendingBrand === 'All brands' ? null : pendingBrand);
+                        setActiveColor(pendingColor === 'All colors' ? null : pendingColor);
+                    }}
                     onClear={() => {
                         setPendingType(null);
+                        setPendingBrand(null);
+                        setPendingColor(null);
                         setActiveType(null);
+                        setActiveBrand(null);
+                        setActiveColor(null);
                     }}
                 />
 
@@ -121,7 +156,7 @@ export default function FeedPage() {
                                 name={garment.name}
                                 brandName={garment.brand?.name}
                                 colors={getGarmentColors(garment)}
-                                image={garment.image_url}
+                                image={getGarmentImageUrl(garment)}
                                 imageAlt={String(
                                     garment.name || garment.type || garment.garment_type?.name || 'Garment',
                                 )}
@@ -129,14 +164,36 @@ export default function FeedPage() {
                                 onFavorite={(isFav) => handleFavorite(String(garment.id), isFav)}
                             />
                         ))
+                    ) : garments.length === 0 ? (
+                        <>
+                            <div className="col-span-full rounded-3xl bg-slate-950/80 p-10 text-center text-white/70 mb-6">
+                                Mostrando prendas predeterminadas con imágenes de ejemplo.
+                            </div>
+                            {getMockGarments().map((garment) => (
+                                <GarmentCard
+                                    key={garment.id}
+                                    id={String(garment.id)}
+                                    label={garment.type || garment.garment_type?.name || ''}
+                                    name={garment.name}
+                                    brandName={garment.brand?.name}
+                                    colors={getGarmentColors(garment)}
+                                    image={getGarmentImageUrl(garment)}
+                                    imageAlt={garment.name}
+                                    isFavorited={false}
+                                />
+                            ))}
+                        </>
                     ) : (
                         <div className="col-span-full flex flex-col justify-center items-center h-64 gap-4">
-                            <p className="text-white/60 text-center">Aún no tienes prendas registradas.</p>
+                            <p className="text-white/60 text-center">No hay prendas que coincidan con el filtro actual.</p>
                             <button
-                                onClick={() => setShowWelcome(true)}
+                                onClick={() => {
+                                    setPendingType(null);
+                                    setActiveType(null);
+                                }}
                                 className="rounded-full px-6 py-2 text-white text-sm bg-blue-600 hover:bg-blue-700 transition"
                             >
-                                ¿Cómo empezar?
+                                Mostrar todas
                             </button>
                         </div>
                     )}
