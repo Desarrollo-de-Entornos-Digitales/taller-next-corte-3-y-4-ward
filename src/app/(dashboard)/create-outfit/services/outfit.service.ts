@@ -1,5 +1,5 @@
 import axiosClient from '@/src/lib/axios/client';
-import { Garment } from '@/src/app/common/services/garment.service';
+import { Garment, garmentService } from '@/src/app/common/services/garment.service';
 
 const OUTFITS_STORAGE_KEY = 'wardd_registered_outfits';
 
@@ -9,13 +9,7 @@ function getCurrentUserKey(): string | null {
     if (!token) return null;
     try {
         const payload = JSON.parse(atob(token.split('.')[1])) as Record<string, unknown>;
-        const idValue =
-            payload.sub ??
-            payload.id ??
-            payload.user_id ??
-            payload.uid ??
-            payload.userId ??
-            null;
+        const idValue = payload.sub ?? payload.id ?? payload.user_id ?? payload.uid ?? payload.userId ?? null;
 
         if (typeof idValue === 'string' && idValue.trim() !== '') {
             return idValue.trim();
@@ -76,7 +70,9 @@ function saveOutfitLocally(data: OutfitData): OutfitResponse {
 function updateStoredOutfit(id: string, update: Partial<OutfitResponse>): OutfitResponse | null {
     const userKey = getCurrentUserKey();
     const stored = getStoredOutfits(userKey);
-    const updated = stored.map((o) => (String(o.id) === String(id) ? { ...o, ...update, updatedAt: new Date().toISOString() } : o));
+    const updated = stored.map((o) =>
+        String(o.id) === String(id) ? { ...o, ...update, updatedAt: new Date().toISOString() } : o,
+    );
     const found = updated.find((o) => String(o.id) === String(id)) ?? null;
     saveStoredOutfits(updated, userKey);
     return found;
@@ -107,10 +103,41 @@ export interface OutfitResponse {
 class OutfitService {
     async createOutfit(outfitData: OutfitData): Promise<OutfitResponse> {
         try {
+            // Resolve garments: if any garment looks local-only, try creating it in backend first
+            const resolvedGarments: Garment[] = await Promise.all(
+                outfitData.garments.map(async (g) => {
+                    const idStr = String(g.id ?? '');
+                    const looksLocal = isNaN(Number(idStr)) || idStr.startsWith('local') || idStr.length > 12;
+                    if (looksLocal) {
+                        try {
+                            const created = await garmentService.createGarment({
+                                name: g.name,
+                                type: g.type || g.garment_type?.name || null,
+                                brand: g.brand?.name ?? undefined,
+                                color:
+                                    (g.garment_colors?.[0]?.color?.name as string) ?? (g.color as string) ?? undefined,
+                                description: g.description ?? undefined,
+                            } as Record<string, unknown>);
+                            return created;
+                        } catch (e) {
+                            console.warn(
+                                'Failed to create garment in backend while creating outfit, keeping local garment',
+                                e,
+                            );
+                            return g;
+                        }
+                    }
+
+                    return g;
+                }),
+            );
+
+            const garmentIds = resolvedGarments.map((g) => g.id);
+
             const response = await axiosClient.post<Partial<OutfitResponse>>('/outfits', {
                 name: outfitData.name,
                 occasion: outfitData.occasion,
-                garmentIds: outfitData.garments.map((g) => g.id),
+                garmentIds,
             });
 
             const resp = response.data || {};
@@ -118,14 +145,26 @@ class OutfitService {
                 id: String(resp.id ?? Date.now()),
                 name: resp.name ?? outfitData.name,
                 occasion: resp.occasion ?? outfitData.occasion,
-                garments: outfitData.garments,
+                garments: resolvedGarments,
                 createdAt: resp.createdAt ?? new Date().toISOString(),
                 updatedAt: resp.updatedAt ?? new Date().toISOString(),
             } as OutfitResponse;
         } catch (error: any) {
             const status = error?.response?.status;
-            if (!error.response || status === 413 || status === 502 || status === 503 || status === 504 || (status !== undefined && status >= 500)) {
-                console.warn('Outfit create failed on server, saving locally. status=', status, 'msg=', error?.response?.data || error?.message);
+            if (
+                !error.response ||
+                status === 413 ||
+                status === 502 ||
+                status === 503 ||
+                status === 504 ||
+                (status !== undefined && status >= 500)
+            ) {
+                console.warn(
+                    'Outfit create failed on server, saving locally. status=',
+                    status,
+                    'msg=',
+                    error?.response?.data || error?.message,
+                );
                 return saveOutfitLocally(outfitData);
             }
 
@@ -159,7 +198,13 @@ class OutfitService {
             return normalized;
         } catch (error: any) {
             const status = error?.response?.status;
-            if (!error.response || status === 502 || status === 503 || status === 504 || (status !== undefined && status >= 500)) {
+            if (
+                !error.response ||
+                status === 502 ||
+                status === 503 ||
+                status === 504 ||
+                (status !== undefined && status >= 500)
+            ) {
                 const existing = updateStoredOutfit(outfitId, {
                     name: outfitData.name,
                     occasion: outfitData.occasion,
@@ -174,10 +219,40 @@ class OutfitService {
     }
 
     async getOutfits(): Promise<OutfitResponse[]> {
-        // Return stored outfits for current user only (user requested).
         const userKey = getCurrentUserKey();
-        const stored = getStoredOutfits(userKey) as OutfitResponse[];
-        return stored;
+        try {
+            const resp = await axiosClient.get<any[]>('/outfits');
+            const backend = (resp.data || []) as any[];
+
+            // Normalize backend outfits to OutfitResponse shape
+            const normalized = backend.map((o) => {
+                const garmentsRaw = o.garments ?? o.garmentIds ?? [];
+                const garments = Array.isArray(garmentsRaw)
+                    ? garmentsRaw.map((g: any) => (typeof g === 'object' ? g : { id: g }))
+                    : [];
+
+                return {
+                    id: String(o.id ?? o._id ?? Date.now()),
+                    name: o.name ?? '',
+                    occasion: o.occasion ?? '',
+                    garments,
+                    createdAt: o.createdAt ?? o.created_at ?? new Date().toISOString(),
+                    updatedAt: o.updatedAt ?? o.updated_at ?? new Date().toISOString(),
+                } as OutfitResponse;
+            });
+
+            // Merge with locally stored outfits (keep extras that only exist locally)
+            const stored = getStoredOutfits(userKey) as OutfitResponse[];
+            if (!stored || stored.length === 0) return normalized;
+
+            const backendIds = new Set(normalized.map((o) => String(o.id)));
+            const extras = stored.filter((s) => !backendIds.has(String(s.id)));
+            return [...normalized, ...extras];
+        } catch (error: any) {
+            // Fallback to stored outfits when backend fails
+            console.warn('Falling back to stored outfits because /outfits request failed', error);
+            return getStoredOutfits(userKey) as OutfitResponse[];
+        }
     }
 
     async deleteOutfit(outfitId: string): Promise<void> {

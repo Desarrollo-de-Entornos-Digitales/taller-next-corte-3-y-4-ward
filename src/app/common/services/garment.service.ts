@@ -26,13 +26,7 @@ function getCurrentUserId(): number | null {
 
     try {
         const payload = JSON.parse(atob(token.split('.')[1])) as Record<string, unknown>;
-        const idValue =
-            payload.sub ??
-            payload.id ??
-            payload.user_id ??
-            payload.uid ??
-            payload.userId ??
-            null;
+        const idValue = payload.sub ?? payload.id ?? payload.user_id ?? payload.uid ?? payload.userId ?? null;
 
         if (typeof idValue === 'string' && idValue.trim() !== '') {
             const parsed = Number(idValue);
@@ -52,13 +46,7 @@ function getCurrentUserKey(): string | null {
 
     try {
         const payload = JSON.parse(atob(token.split('.')[1])) as Record<string, unknown>;
-        const idValue =
-            payload.sub ??
-            payload.id ??
-            payload.user_id ??
-            payload.uid ??
-            payload.userId ??
-            null;
+        const idValue = payload.sub ?? payload.id ?? payload.user_id ?? payload.uid ?? payload.userId ?? null;
 
         if (typeof idValue === 'string' && idValue.trim() !== '') {
             return idValue.trim();
@@ -294,15 +282,18 @@ class GarmentService {
             };
 
             const status = axiosError.response?.status;
+            // Save locally on server errors or when authorization fails (401),
+            // so the UI can still show the created garment even if backend rejects the request.
             if (
                 !axiosError.response ||
+                status === 401 ||
                 status === 413 ||
                 status === 502 ||
                 status === 503 ||
                 status === 504 ||
                 (status !== undefined && status >= 500)
             ) {
-                console.warn('Backend unavailable; saving garment locally instead', error);
+                console.warn('Backend unavailable or unauthorized; saving garment locally instead', error);
                 return await createLocalGarment(data, preview);
             }
 

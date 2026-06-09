@@ -10,13 +10,7 @@ function getUserIdFromToken(): number | null {
     if (!token) return null;
     try {
         const payload = JSON.parse(atob(token.split('.')[1])) as Record<string, unknown>;
-        const idValue =
-            payload.sub ??
-            payload.id ??
-            payload.user_id ??
-            payload.uid ??
-            payload.userId ??
-            null;
+        const idValue = payload.sub ?? payload.id ?? payload.user_id ?? payload.uid ?? payload.userId ?? null;
 
         if (typeof idValue === 'string' && idValue.trim() !== '') {
             const parsed = Number(idValue);
@@ -44,14 +38,13 @@ export const useGarments = () => {
 
             const id = getUserIdFromToken();
             if (!id) {
+                // Not authenticated — still attempt to load garments (will return stored ones)
                 setIsAuthenticated(false);
-                setGarments([]);
-                setLoading(false);
-                return;
+                setUserId(null);
+            } else {
+                setIsAuthenticated(true);
+                setUserId(id);
             }
-
-            setUserId(id);
-            setIsAuthenticated(true);
 
             const data = await garmentService.getGarments();
             setGarments(data);

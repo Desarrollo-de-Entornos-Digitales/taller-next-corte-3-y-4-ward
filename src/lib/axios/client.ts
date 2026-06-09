@@ -1,10 +1,11 @@
 import axios, { AxiosInstance, AxiosRequestHeaders } from 'axios';
 
-const isServer = typeof window === 'undefined';
 const API_BASE = process.env.NEXT_PUBLIC_API || 'http://localhost:3001';
 
 const axiosClient: AxiosInstance = axios.create({
-    baseURL: isServer ? API_BASE : '/api',
+    // Use direct backend URL from the client to ensure Authorization header is sent
+    // (avoids Next.js rewrite/proxy that can drop headers in dev)
+    baseURL: API_BASE,
 });
 
 axiosClient.interceptors.request.use((config) => {
@@ -21,6 +22,12 @@ axiosClient.interceptors.request.use((config) => {
             } else {
                 (headers as Record<string, string>).Authorization = `Bearer ${token}`;
             }
+            try {
+                const masked = typeof token === 'string' ? `${token.slice(0, 6)}...${token.slice(-6)}` : 'present';
+                // Debug log to help track missing Authorization issues (temporary)
+                // eslint-disable-next-line no-console
+                console.debug('[axios] attaching Authorization Bearer token', masked);
+            } catch {}
         }
     }
 

@@ -62,11 +62,15 @@ export default function CreateOutfitPage() {
                 console.warn('Error creating outfit en servidor, guardando localmente:', serviceError);
             }
 
+            const garmentIdsToStore = createdOutfit
+                ? (createdOutfit.garments || []).map((g) => String(g.id))
+                : selectedGarments.map((g) => String(g.id));
+
             addOutfit({
                 id: String(createdOutfit?.id ?? `local-${Date.now()}`),
                 name: outfitName,
                 occasion,
-                garmentIds: selectedGarments.map((g) => String(g.id)),
+                garmentIds: garmentIdsToStore,
             });
 
             // Reset form on success

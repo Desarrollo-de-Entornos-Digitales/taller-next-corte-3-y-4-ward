@@ -75,22 +75,18 @@ export default function RegisterGarmentPage() {
     const colorOptions = Array.from(new Set([...garmentColors, ...uniqueColors]));
 
     const buildPayload = async (): Promise<Record<string, unknown>> => {
-        const payload: Record<string, unknown> = {
+        const base: Record<string, unknown> = {
             name: name.trim(),
             type: type.trim(),
         };
 
-        if (brand.trim()) payload.brand = brand.trim();
-        if (color.trim()) payload.color = color.trim();
-        if (description.trim()) payload.description = description.trim();
+        if (brand.trim()) base.brand = brand.trim();
+        if (color.trim()) base.color = color.trim();
+        if (description.trim()) base.description = description.trim();
 
-        if (selectedFile) {
-            payload.image_url = getFallbackGarmentImage(type.trim(), name.trim());
-        } else {
-            payload.image_url = imagePreview || getFallbackGarmentImage(type.trim(), name.trim());
-        }
-
-        return payload;
+        // If there is a selected file, we'll send FormData in handleSubmit instead.
+        base.image_url = imagePreview || getFallbackGarmentImage(type.trim(), name.trim());
+        return base;
     };
 
     const handleSubmit = async (e?: React.FormEvent) => {
@@ -112,7 +108,21 @@ export default function RegisterGarmentPage() {
             setIsSaving(true);
             const payload = await buildPayload();
 
-            const created = await garmentService.createGarment(payload, selectedFile && imagePreview ? imagePreview : undefined);
+            // If user provided a file, send FormData so backend can receive the image file.
+            let created;
+            if (selectedFile) {
+                const form = new FormData();
+                form.append('name', String(payload.name || ''));
+                form.append('type', String(payload.type || ''));
+                if (payload.brand) form.append('brand', String(payload.brand));
+                if (payload.color) form.append('color', String(payload.color));
+                if (payload.description) form.append('description', String(payload.description));
+                form.append('image', selectedFile, selectedFile.name);
+
+                created = await garmentService.createGarment(form, imagePreview || undefined);
+            } else {
+                created = await garmentService.createGarment(payload, imagePreview || undefined);
+            }
             addGarment(created);
             await refetch();
             setSaveSuccess(true);
@@ -150,7 +160,8 @@ export default function RegisterGarmentPage() {
                     )}
                     {error && (
                         <div className="mb-4 bg-yellow-500/10 border border-yellow-500/20 p-3 text-yellow-200 rounded">
-                            No se pudieron cargar las prendas existentes: {error}. Usa los valores predeterminados para marca y color.
+                            No se pudieron cargar las prendas existentes: {error}. Usa los valores predeterminados para
+                            marca y color.
                         </div>
                     )}
                     {saveSuccess && (
@@ -199,12 +210,13 @@ export default function RegisterGarmentPage() {
                                     onChange={handleImageChange}
                                     className="hidden"
                                 />
-                                <label htmlFor="garment-image-upload" className="mt-2 inline-flex items-center justify-center rounded-full border border-white/20 bg-white/10 px-5 py-2 text-sm font-medium text-white hover:bg-white/20 transition-colors cursor-pointer">
+                                <label
+                                    htmlFor="garment-image-upload"
+                                    className="mt-2 inline-flex items-center justify-center rounded-full border border-white/20 bg-white/10 px-5 py-2 text-sm font-medium text-white hover:bg-white/20 transition-colors cursor-pointer"
+                                >
                                     Seleccionar imagen desde el escritorio
                                 </label>
-                                {imageName && (
-                                    <p className="text-sm text-white/70">Archivo: {imageName}</p>
-                                )}
+                                {imageName && <p className="text-sm text-white/70">Archivo: {imageName}</p>}
                             </div>
                         </div>
 
