@@ -77,7 +77,7 @@ export default function RegisterGarmentPage() {
                 type,
                 color,
                 description,
-                imageUrl: '/assets/Accessorie.svg',
+                image_url: imagePreview || '/assets/Accessorie.svg',
             };
 
             const created = await garmentService.createGarment(payload);

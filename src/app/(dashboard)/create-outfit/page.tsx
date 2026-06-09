@@ -13,8 +13,16 @@ import AddGarmentsSection from './components/AddGarmentsSection';
 
 export default function CreateOutfitPage() {
     const { garments, loading, error } = useGarments();
-    const { selectedGarmentIds, outfitName, occasion, toggleGarment, clearOutfit, setOutfitName, setOccasion } =
-        useOutfitStore();
+    const {
+        selectedGarmentIds,
+        outfitName,
+        occasion,
+        toggleGarment,
+        clearOutfit,
+        setOutfitName,
+        setOccasion,
+        addOutfit,
+    } = useOutfitStore();
     const [isSaving, setIsSaving] = useState(false);
     const [saveError, setSaveError] = useState<string | null>(null);
     const [saveSuccess, setSaveSuccess] = useState(false);
@@ -43,10 +51,22 @@ export default function CreateOutfitPage() {
             setIsSaving(true);
             setSaveError(null);
 
-            await outfitService.createOutfit({
+            let createdOutfit = null;
+            try {
+                createdOutfit = await outfitService.createOutfit({
+                    name: outfitName,
+                    occasion: occasion,
+                    garments: selectedGarments,
+                });
+            } catch (serviceError) {
+                console.warn('Error creating outfit en servidor, guardando localmente:', serviceError);
+            }
+
+            addOutfit({
+                id: String(createdOutfit?.id ?? `local-${Date.now()}`),
                 name: outfitName,
-                occasion: occasion,
-                garments: selectedGarments,
+                occasion,
+                garmentIds: selectedGarments.map((g) => String(g.id)),
             });
 
             // Reset form on success

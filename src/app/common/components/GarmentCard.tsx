@@ -30,8 +30,37 @@ const garmentImageMap: Record<string, string> = {
     Accessories: '/assets/Accessorie.svg',
 };
 
+function normalizeGarmentLabel(label: string): string {
+    return label
+        .trim()
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/gi, ' ')
+        .trim();
+}
+
 function getGarmentImage(label: string): string {
-    return garmentImageMap[label] || '/assets/Accessorie.svg';
+    const normalized = normalizeGarmentLabel(label);
+
+    const mapping: Record<string, string> = {
+        't shirt': '/assets/Tshirt.svg',
+        tshirt: '/assets/Tshirt.svg',
+        shirt: '/assets/Shirt.svg',
+        pants: '/assets/pants.svg',
+        trousers: '/assets/pants.svg',
+        jean: '/assets/pants.svg',
+        jacket: '/assets/Jacket.svg',
+        coat: '/assets/Jacket.svg',
+        sweater: '/assets/Sweater.svg',
+        jumper: '/assets/Sweater.svg',
+        dress: '/assets/Dress.svg',
+        skirt: '/assets/Skirt.svg',
+        shoes: '/assets/Shoes.svg',
+        sneakers: '/assets/Shoes.svg',
+        accessories: '/assets/Accessorie.svg',
+        accessory: '/assets/Accessorie.svg',
+    };
+
+    return mapping[normalized] || '/assets/Accessorie.svg';
 }
 
 export default function GarmentCard({

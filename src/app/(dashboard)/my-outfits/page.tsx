@@ -1,28 +1,16 @@
 'use client';
 
+import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useOutfitStore } from '@/src/lib/zustand/outfitStore';
 
 export default function MyOutfitsPage() {
     const router = useRouter();
+    const { createdOutfits, loadOutfits } = useOutfitStore();
 
-    // TEMPORAL
-    const outfits = [
-        {
-            id: 1,
-            name: 'Casual Friday',
-            garments: [1, 2, 3, 4],
-        },
-        {
-            id: 2,
-            name: 'University Day',
-            garments: [1, 2, 3],
-        },
-        {
-            id: 3,
-            name: 'Night Out',
-            garments: [1, 2, 3, 4, 5],
-        },
-    ];
+    useEffect(() => {
+        loadOutfits();
+    }, [loadOutfits]);
 
     return (
         <main className="min-h-screen bg-linear-to-b from-slate-950 via-slate-900 to-slate-950">
@@ -55,13 +43,13 @@ export default function MyOutfitsPage() {
                         </p>
 
                         <h2 className="text-white text-5xl font-bold mt-3">
-                            {outfits.length}
+                            {createdOutfits.length}
                         </h2>
                     </div>
                 </div>
 
                 {/* Empty State */}
-                {outfits.length === 0 ? (
+                {createdOutfits.length === 0 ? (
                     <div className="rounded-3xl bg-slate-800/50 backdrop-blur border border-slate-700/50 p-12 text-center">
                         <h3 className="text-white text-2xl font-bold mb-4">
                             Aún no has creado outfits
@@ -81,7 +69,7 @@ export default function MyOutfitsPage() {
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                        {outfits.map((outfit) => (
+                        {createdOutfits.map((outfit) => (
                             <div
                                 key={outfit.id}
                                 className="rounded-3xl bg-slate-800/50 backdrop-blur border border-slate-700/50 p-8 hover:border-blue-500/50 transition"
@@ -92,7 +80,7 @@ export default function MyOutfitsPage() {
                                     </h3>
 
                                     <p className="text-white/60">
-                                        {outfit.garments.length} prendas
+                                        {outfit.garmentIds.length} prendas
                                         asociadas
                                     </p>
                                 </div>
