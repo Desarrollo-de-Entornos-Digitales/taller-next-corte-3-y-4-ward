@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { outfitService } from '@/src/app/(dashboard)/create-outfit/services/outfit.service';
+import { Garment } from '@/src/app/common/services/garment.service';
 
 export interface Outfit {
     id: string;
@@ -7,6 +8,7 @@ export interface Outfit {
     occasion?: string;
     userId?: string;
     garmentIds: string[];
+    garments?: Garment[];
 }
 
 interface OutfitStore {
@@ -25,19 +27,44 @@ interface OutfitStore {
 
 const BASE_LOCAL_STORAGE_KEY = 'wardd_registered_outfits';
 
-function getCurrentUserKey(): string | null {
+function parseUserKeyFromPayload(payload: Record<string, unknown>): string | null {
+    const idValue = payload.sub ?? payload.id ?? payload.user_id ?? payload.uid ?? payload.userId ?? null;
+    if (typeof idValue === 'string' && idValue.trim() !== '') return idValue.trim();
+    if (typeof idValue === 'number') return String(idValue);
+    return null;
+}
+
+function getCurrentUserFromLocalStorage(): Record<string, unknown> | null {
     if (typeof window === 'undefined') return null;
-    const token = localStorage.getItem('token');
-    if (!token) return null;
     try {
-        const payload = JSON.parse(atob(token.split('.')[1])) as Record<string, unknown>;
-        const idValue = payload.sub ?? payload.id ?? payload.user_id ?? payload.uid ?? payload.userId ?? null;
-        if (typeof idValue === 'string' && idValue.trim() !== '') return idValue.trim();
-        if (typeof idValue === 'number') return String(idValue);
-        return token.slice(0, 24);
+        const currentUserString = localStorage.getItem('current_user');
+        if (!currentUserString) return null;
+        return JSON.parse(currentUserString) as Record<string, unknown>;
     } catch {
         return null;
     }
+}
+
+function getCurrentUserKey(): string | null {
+    if (typeof window === 'undefined') return null;
+    const token = localStorage.getItem('token');
+    if (token) {
+        try {
+            const payload = JSON.parse(atob(token.split('.')[1])) as Record<string, unknown>;
+            const key = parseUserKeyFromPayload(payload);
+            if (key) return key;
+        } catch {
+            // invalid token
+        }
+    }
+
+    const currentUser = getCurrentUserFromLocalStorage();
+    if (currentUser) {
+        const key = parseUserKeyFromPayload(currentUser);
+        if (key) return key;
+    }
+
+    return token ? token.slice(0, 24) : null;
 }
 
 function getStorageKey(userKey?: string | null) {
@@ -91,6 +118,7 @@ export const useOutfitStore = create<OutfitStore>()((set) => ({
                     name: o.name || '',
                     occasion: o.occasion || '',
                     garmentIds,
+                    garments: Array.isArray(o.garments) ? o.garments : undefined,
                 };
             });
             set({ createdOutfits: normalized });

@@ -6,7 +6,7 @@ import { useOutfitStore } from '@/src/lib/zustand/outfitStore';
 
 export default function MyOutfitsPage() {
     const router = useRouter();
-    const { createdOutfits, loadOutfits } = useOutfitStore();
+    const { createdOutfits, loadOutfits, removeOutfit } = useOutfitStore();
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
@@ -81,12 +81,24 @@ export default function MyOutfitsPage() {
                                     <p className="text-white/60">{outfit.garmentIds.length} prendas asociadas</p>
                                 </div>
 
-                                <button
-                                    onClick={() => router.push(`/my-outfits/${outfit.id}`)}
-                                    className="w-full py-3 rounded-full bg-linear-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white font-semibold transition"
-                                >
-                                    Ver Outfit
-                                </button>
+                                <div className="flex gap-3 flex-col">
+                                    <button
+                                        onClick={() => router.push(`/my-outfits/${outfit.id}`)}
+                                        className="w-full py-3 rounded-full bg-linear-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white font-semibold transition"
+                                    >
+                                        Ver Outfit
+                                    </button>
+                                    <button
+                                        onClick={() => {
+                                            if (window.confirm('¿Eliminar este outfit?')) {
+                                                removeOutfit(outfit.id);
+                                            }
+                                        }}
+                                        className="w-full py-3 rounded-full bg-rose-600 hover:bg-rose-700 text-white font-semibold transition"
+                                    >
+                                        Eliminar Outfit
+                                    </button>
+                                </div>
                             </div>
                         ))}
                     </div>

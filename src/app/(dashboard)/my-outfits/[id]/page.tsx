@@ -9,6 +9,7 @@ import { getGarmentColors, getGarmentImageUrl } from '@/src/util/garments.util';
 import { useGarments } from '@/src/app/common/hooks/useGarments';
 import { useOutfitStore } from '@/src/lib/zustand/outfitStore';
 import { outfitService } from '@/src/app/(dashboard)/create-outfit/services/outfit.service';
+import { Garment } from '@/src/app/common/services/garment.service';
 
 export default function MyOutfitDetailPage() {
     const params = useParams();
@@ -40,7 +41,22 @@ export default function MyOutfitDetailPage() {
 
     const selectedGarments = useMemo(() => {
         if (!outfit) return [];
-        return garments.filter((garment) => outfit.garmentIds.includes(String(garment.id)));
+        const selected = new Map<string, Garment>();
+
+        garments.forEach((garment) => {
+            if (outfit.garmentIds.includes(String(garment.id))) {
+                selected.set(String(garment.id), garment);
+            }
+        });
+
+        (outfit.garments ?? []).forEach((garment) => {
+            const id = String(garment.id);
+            if (!selected.has(id)) {
+                selected.set(id, garment);
+            }
+        });
+
+        return Array.from(selected.values());
     }, [garments, outfit]);
 
     if (!isOutfitsLoaded) {

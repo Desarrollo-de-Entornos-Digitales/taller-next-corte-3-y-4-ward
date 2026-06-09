@@ -13,54 +13,88 @@ export interface Garment {
     garment_colors?: { color: { id: number; name: string } }[];
     description?: string | null;
     color?: string | null;
+    createdBy?: string | number | null;
+    userId?: string | number | null;
     createdAt?: string;
     updatedAt?: string;
 }
 
 const GARMENTS_STORAGE_KEY = 'wardd_registered_garments';
 
-function getCurrentUserId(): number | null {
+function parseUserIdFromPayload(payload: Record<string, unknown>): number | null {
+    const idValue = payload.sub ?? payload.id ?? payload.user_id ?? payload.uid ?? payload.userId ?? null;
+
+    if (typeof idValue === 'string' && idValue.trim() !== '') {
+        const parsed = Number(idValue);
+        return Number.isNaN(parsed) ? null : parsed;
+    }
+
+    return typeof idValue === 'number' ? idValue : null;
+}
+
+function parseUserKeyFromPayload(payload: Record<string, unknown>): string | null {
+    const idValue = payload.sub ?? payload.id ?? payload.user_id ?? payload.uid ?? payload.userId ?? null;
+
+    if (typeof idValue === 'string' && idValue.trim() !== '') {
+        return idValue.trim();
+    }
+
+    if (typeof idValue === 'number') {
+        return String(idValue);
+    }
+
+    return null;
+}
+
+function getCurrentUserFromLocalStorage(): Record<string, unknown> | null {
     if (typeof window === 'undefined') return null;
-    const token = localStorage.getItem('token');
-    if (!token) return null;
-
     try {
-        const payload = JSON.parse(atob(token.split('.')[1])) as Record<string, unknown>;
-        const idValue = payload.sub ?? payload.id ?? payload.user_id ?? payload.uid ?? payload.userId ?? null;
-
-        if (typeof idValue === 'string' && idValue.trim() !== '') {
-            const parsed = Number(idValue);
-            return Number.isNaN(parsed) ? null : parsed;
-        }
-
-        return typeof idValue === 'number' ? idValue : null;
+        const currentUserString = localStorage.getItem('current_user');
+        if (!currentUserString) return null;
+        return JSON.parse(currentUserString) as Record<string, unknown>;
     } catch {
         return null;
     }
 }
 
+function getCurrentUserId(): number | null {
+    if (typeof window === 'undefined') return null;
+    const token = localStorage.getItem('token');
+    if (token) {
+        try {
+            const payload = JSON.parse(atob(token.split('.')[1])) as Record<string, unknown>;
+            const id = parseUserIdFromPayload(payload);
+            if (id != null) return id;
+        } catch {
+            // ignore invalid token
+        }
+    }
+
+    const currentUser = getCurrentUserFromLocalStorage();
+    if (!currentUser) return null;
+    return parseUserIdFromPayload(currentUser);
+}
+
 function getCurrentUserKey(): string | null {
     if (typeof window === 'undefined') return null;
     const token = localStorage.getItem('token');
-    if (!token) return null;
-
-    try {
-        const payload = JSON.parse(atob(token.split('.')[1])) as Record<string, unknown>;
-        const idValue = payload.sub ?? payload.id ?? payload.user_id ?? payload.uid ?? payload.userId ?? null;
-
-        if (typeof idValue === 'string' && idValue.trim() !== '') {
-            return idValue.trim();
+    if (token) {
+        try {
+            const payload = JSON.parse(atob(token.split('.')[1])) as Record<string, unknown>;
+            const key = parseUserKeyFromPayload(payload);
+            if (key) return key;
+        } catch {
+            // ignore invalid token
         }
-
-        if (typeof idValue === 'number') {
-            return String(idValue);
-        }
-
-        // Fallback to a stable token-based key if no explicit user ID is available.
-        return token.slice(0, 24);
-    } catch {
-        return null;
     }
+
+    const currentUser = getCurrentUserFromLocalStorage();
+    if (currentUser) {
+        const key = parseUserKeyFromPayload(currentUser);
+        if (key) return key;
+    }
+
+    return token ? token.slice(0, 24) : null;
 }
 
 function getStorageKey(userKey?: number | string | null): string {
@@ -90,12 +124,30 @@ function saveStoredGarments(garments: Garment[], userKey?: number | string | nul
     }
 }
 
+function getGarmentRecordId(garment: Garment): string {
+    const rawId = garment.id ?? (garment as any)._id;
+    return rawId != null ? String(rawId) : '';
+}
+
+function normalizeGarmentId<T extends Garment>(garment: T): T {
+    if ((garment.id === undefined || garment.id === null || garment.id === '') && (garment as any)._id != null) {
+        // eslint-disable-next-line no-param-reassign
+        garment.id = String((garment as any)._id);
+    }
+    return garment;
+}
+
+function isSameGarmentId(garment: Garment, id: string | number): boolean {
+    const normalizedId = String(id);
+    return getGarmentRecordId(garment) === normalizedId;
+}
+
 function removeStoredGarment(id: string | number, userKey?: number | string | null): void {
     if (typeof window === 'undefined') return;
     const storageKey = getStorageKey(userKey ?? getCurrentUserKey());
     try {
         const storedGarments = getStoredGarments(userKey);
-        const filtered = storedGarments.filter((garment) => String(garment.id) !== String(id));
+        const filtered = storedGarments.filter((garment) => !isSameGarmentId(garment, id));
         window.localStorage.setItem(storageKey, JSON.stringify(filtered));
     } catch (error) {
         console.warn('Failed to remove stored garment:', error);
@@ -111,9 +163,9 @@ function updateStoredGarment(
     const currentUserKey = userKey ?? getCurrentUserKey();
     const storedGarments = getStoredGarments(currentUserKey);
     const updatedGarments = storedGarments.map((garment) =>
-        String(garment.id) === String(id) ? { ...garment, ...update } : garment,
+        isSameGarmentId(garment, id) ? { ...garment, ...update } : garment,
     );
-    const updated = updatedGarments.find((garment) => String(garment.id) === String(id)) ?? null;
+    const updated = updatedGarments.find((garment) => isSameGarmentId(garment, id)) ?? null;
     saveStoredGarments(updatedGarments, currentUserKey);
     return updated;
 }
@@ -122,7 +174,7 @@ function saveGarmentLocally(garment: Garment, preview?: string): void {
     const userKey = getCurrentUserKey();
     const storedGarments = getStoredGarments(userKey);
     const exists = storedGarments.some((stored) => String(stored.id) === String(garment.id));
-    const garmentToStore = preview ? { ...garment, image_preview: preview } : garment;
+    const garmentToStore = preview ? { ...garment, image_preview: preview, createdBy: userKey, userId: userKey } : { ...garment, createdBy: userKey, userId: userKey };
     if (!exists) {
         saveStoredGarments([...storedGarments, garmentToStore], userKey);
     } else if (preview) {
@@ -133,15 +185,35 @@ function saveGarmentLocally(garment: Garment, preview?: string): void {
     }
 }
 
+function filterGarmentsByUser(garments: Garment[], userId: number | string | null, strict = false): Garment[] {
+    if (userId == null) return garments;
+    const normalizedUserId = String(userId);
+    return garments.filter((garment) => {
+        const createdBy =
+            garment.createdBy ??
+            garment.userId ??
+            (garment as any).created_by ??
+            (garment as any).ownerId ??
+            (garment as any).user_id;
+
+        if (createdBy != null) {
+            return String(createdBy) === normalizedUserId;
+        }
+
+        return !strict;
+    });
+}
+
 function mergeStoredWithBackend(backendGarments: Garment[], userKey?: number | string | null): Garment[] {
     const storedGarments = getStoredGarments(userKey);
     if (storedGarments.length === 0) return backendGarments;
 
-    const storedMap = new Map(storedGarments.map((garment) => [String(garment.id), garment]));
-    const backendIds = new Set(backendGarments.map((garment) => String(garment.id)));
+    const storedMap = new Map(storedGarments.map((garment) => [getGarmentRecordId(garment), garment]));
+    const backendIds = new Set(backendGarments.map((garment) => getGarmentRecordId(garment)));
 
     const merged = backendGarments.map((backendGarment) => {
-        const stored = storedMap.get(String(backendGarment.id));
+        const backendId = getGarmentRecordId(backendGarment);
+        const stored = storedMap.get(backendId);
         if (!stored) return backendGarment;
 
         return {
@@ -152,7 +224,7 @@ function mergeStoredWithBackend(backendGarments: Garment[], userKey?: number | s
         };
     });
 
-    const extras = storedGarments.filter((garment) => !backendIds.has(String(garment.id)));
+    const extras = storedGarments.filter((garment) => !backendIds.has(getGarmentRecordId(garment)));
     return [...merged, ...extras];
 }
 
@@ -219,13 +291,27 @@ async function createLocalGarment(data: Record<string, unknown> | FormData, prev
 
 class GarmentService {
     async getGarmentsByUser(userId: number): Promise<Garment[]> {
-        try {
-            const result = await axiosClient.get<Garment[]>(`/garments/user/${userId}`);
-            return mergeStoredWithBackend(result.data, userId);
-        } catch (error: any) {
-            console.warn('Falling back to stored garments for user because /garments/user request failed', error);
-            return getStoredGarments(userId);
+        const userKey = String(userId);
+        const endpoints = [
+            `/garments/user/${userId}`,
+            `/garments?userId=${userId}`,
+            `/garments?createdBy=${userId}`,
+            `/garments`,
+        ];
+
+        for (const endpoint of endpoints) {
+            try {
+                const result = await axiosClient.get<Garment[]>(endpoint);
+                const strict = endpoint === '/garments';
+                const filtered = filterGarmentsByUser(result.data, userId, strict);
+                return mergeStoredWithBackend(filtered, userKey);
+            } catch (error) {
+                console.warn(`garmentService: request failed for ${endpoint}`, error);
+                // Try next endpoint
+            }
         }
+
+        return getStoredGarments(userKey);
     }
 
     async getGarments(): Promise<Garment[]> {
@@ -236,10 +322,10 @@ class GarmentService {
 
         try {
             const result = await axiosClient.get<Garment[]>(`/garments`);
-            return mergeStoredWithBackend(result.data, getCurrentUserId());
+            return mergeStoredWithBackend(result.data, getCurrentUserKey());
         } catch (error: any) {
             console.warn('Falling back to stored garments because /garments request failed', error);
-            return getStoredGarments(getCurrentUserId());
+            return getStoredGarments(getCurrentUserKey());
         }
     }
 
@@ -247,16 +333,17 @@ class GarmentService {
         const userKey = getCurrentUserKey();
         try {
             const result = await axiosClient.get<Garment>(`/garments/${id}`);
-            const stored = getStoredGarments(userKey).find((garment) => String(garment.id) === String(id));
+            const stored = getStoredGarments(userKey).find((garment) => isSameGarmentId(garment, id));
+            const normalized = normalizeGarmentId(result.data);
             if (stored) {
                 return {
-                    ...result.data,
-                    image_preview: stored.image_preview ?? result.data.image_preview,
-                    image_url: result.data.image_url ?? stored.image_url,
-                    imageUrl: result.data.imageUrl ?? stored.imageUrl,
+                    ...normalized,
+                    image_preview: stored.image_preview ?? normalized.image_preview,
+                    image_url: normalized.image_url ?? stored.image_url,
+                    imageUrl: normalized.imageUrl ?? stored.imageUrl,
                 };
             }
-            return result.data;
+            return normalized;
         } catch (error: any) {
             const stored = getStoredGarments(userKey);
             const match = stored.find((garment) => String(garment.id) === String(id));
@@ -270,8 +357,8 @@ class GarmentService {
     async createGarment(data: Record<string, unknown> | FormData, preview?: string): Promise<Garment> {
         try {
             const response = await axiosClient.post<Garment>('/garments', data);
-            saveGarmentLocally(response.data, preview);
-            return preview ? { ...response.data, image_preview: preview } : response.data;
+            const normalized = normalizeGarmentId(response.data);
+            return preview ? { ...normalized, image_preview: preview } : normalized;
         } catch (error: unknown) {
             const axiosError = error as {
                 response?: {
@@ -336,16 +423,27 @@ class GarmentService {
     }
 
     async deleteGarment(id: string | number): Promise<void> {
+        const userKey = getCurrentUserKey();
         try {
             await axiosClient.delete(`/garments/${id}`);
-            removeStoredGarment(id, getCurrentUserKey());
+            removeStoredGarment(id, userKey);
         } catch (error: unknown) {
             const axiosError = error as {
                 response?: {
+                    status?: number;
                     data?: { message?: string };
                 };
                 message?: string;
             };
+            const status = axiosError.response?.status;
+
+            if (!axiosError.response || status === 404 || status >= 500) {
+                // Backend unavailable or garment not found on server: remove local fallback copy.
+                removeStoredGarment(id, userKey);
+                return;
+            }
+
+            // Backend returned a client error (e.g. auth or validation): do not remove local copy because backend deletion was not confirmed.
             console.error('Error deleting garment:', error);
             throw new Error(axiosError.response?.data?.message || axiosError.message || 'Failed to delete garment');
         }

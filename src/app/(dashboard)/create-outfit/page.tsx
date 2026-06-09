@@ -68,6 +68,7 @@ export default function CreateOutfitPage() {
                 name: outfitName,
                 occasion,
                 garmentIds,
+                garments: createdOutfit.garments || selectedGarments,
             });
 
             // Reset form on success
