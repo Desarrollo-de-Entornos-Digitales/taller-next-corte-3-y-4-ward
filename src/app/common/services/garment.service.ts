@@ -31,7 +31,7 @@ class GarmentService {
         return result.data;
     }
 
-    async createGarment(data: Record<string, unknown>): Promise<Garment> {
+    async createGarment(data: Record<string, unknown> | FormData): Promise<Garment> {
         try {
             const response = await axiosClient.post<Garment>('/garments', data);
             return response.data;

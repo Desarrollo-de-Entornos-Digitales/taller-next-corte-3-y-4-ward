@@ -17,6 +17,14 @@ axiosClient.interceptors.request.use((config) => {
             config.headers.Authorization = `Bearer ${token}`;
         }
     }
+
+    if (config.data instanceof FormData) {
+        if (config.headers) {
+            const headers = config.headers as Record<string, unknown>;
+            delete headers['Content-Type'];
+        }
+    }
+
     return config;
 });
 

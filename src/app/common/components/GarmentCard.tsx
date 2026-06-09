@@ -18,18 +18,6 @@ interface GarmentCardProps {
     className?: string;
 }
 
-const garmentImageMap: Record<string, string> = {
-    'T-Shirt': '/assets/Tshirt.svg',
-    Shirt: '/assets/Shirt.svg',
-    Pants: '/assets/pants.svg',
-    Jacket: '/assets/Jacket.svg',
-    Sweater: '/assets/Sweater.svg',
-    Dress: '/assets/Dress.svg',
-    Skirt: '/assets/Skirt.svg',
-    Shoes: '/assets/Shoes.svg',
-    Accessories: '/assets/Accessorie.svg',
-};
-
 function normalizeGarmentLabel(label: string): string {
     return label
         .trim()
@@ -45,19 +33,32 @@ function getGarmentImage(label: string): string {
         't shirt': '/assets/Tshirt.svg',
         tshirt: '/assets/Tshirt.svg',
         shirt: '/assets/Shirt.svg',
+        camisa: '/assets/Shirt.svg',
+        polo: '/assets/Tshirt.svg',
+        playera: '/assets/Tshirt.svg',
+        remera: '/assets/Tshirt.svg',
         pants: '/assets/pants.svg',
-        trousers: '/assets/pants.svg',
+        pantalones: '/assets/pants.svg',
+        pantalon: '/assets/pants.svg',
+        jeans: '/assets/pants.svg',
         jean: '/assets/pants.svg',
         jacket: '/assets/Jacket.svg',
+        chaqueta: '/assets/Jacket.svg',
+        abrigo: '/assets/Jacket.svg',
         coat: '/assets/Jacket.svg',
         sweater: '/assets/Sweater.svg',
+        sueter: '/assets/Sweater.svg',
         jumper: '/assets/Sweater.svg',
         dress: '/assets/Dress.svg',
+        vestido: '/assets/Dress.svg',
         skirt: '/assets/Skirt.svg',
+        falda: '/assets/Skirt.svg',
         shoes: '/assets/Shoes.svg',
         sneakers: '/assets/Shoes.svg',
+        zapatillas: '/assets/Shoes.svg',
         accessories: '/assets/Accessorie.svg',
         accessory: '/assets/Accessorie.svg',
+        accesorios: '/assets/Accessorie.svg',
     };
 
     return mapping[normalized] || '/assets/Accessorie.svg';
