@@ -11,10 +11,15 @@ axiosClient.interceptors.request.use((config) => {
     if (typeof window !== 'undefined') {
         const token = localStorage.getItem('token');
         if (token) {
-            if (config.headers) {
-                (config.headers as AxiosRequestHeaders).Authorization = `Bearer ${token}`;
+            if (!config.headers) {
+                config.headers = {} as AxiosRequestHeaders;
+            }
+
+            const headers = config.headers as AxiosRequestHeaders | Record<string, string>;
+            if ('set' in headers && typeof headers.set === 'function') {
+                headers.set('Authorization', `Bearer ${token}`);
             } else {
-                config.headers = { Authorization: `Bearer ${token}` } as AxiosRequestHeaders;
+                (headers as Record<string, string>).Authorization = `Bearer ${token}`;
             }
         }
     }

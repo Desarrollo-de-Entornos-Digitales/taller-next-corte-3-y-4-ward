@@ -97,7 +97,6 @@ export default function RegisterGarmentPage() {
                 formData.append('color', color);
                 formData.append('description', description);
                 formData.append('image', selectedFile);
-                formData.append('file', selectedFile);
                 payload = formData;
             } else {
                 payload = {
