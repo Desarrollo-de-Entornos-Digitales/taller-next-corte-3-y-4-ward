@@ -113,12 +113,12 @@ if (!garment) {
 }
 
 return (
-    <main className="min-h-screen bg-linear-to-b from-slate-950 via-slate-900 to-slate-950">
+    <main className="min-h-screen bg-linear-to-b from-slate-950 via-slate-900 to-slate-950 pt-15">
         <section className="px-8 md:px-16 py-14">
 
             <button
                 onClick={() => router.back()}
-                className="mb-8 text-cyan-400 hover:text-cyan-300 font-medium transition"
+                className="mb-8 text-blue-700 hover:text-blue-500 font-medium flex items-center gap-2 transition"
             >
                 ← Volver
             </button>

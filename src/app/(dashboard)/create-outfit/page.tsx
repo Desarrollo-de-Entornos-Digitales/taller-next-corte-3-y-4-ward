@@ -76,8 +76,8 @@ export default function CreateOutfitPage() {
     }
 
     return (
-        <div className="min-h-screen bg-linear-to-b from-slate-950 via-slate-900 to-slate-950 p-6 md:p-12">
-            <div className="max-w-7xl mx-auto">
+        <div className="min-h-screen bg-linear-to-b from-slate-950 via-slate-900 to-slate-950 p-6 md:p-12 ">
+            <div className="max-w-7xl mx-auto pt-15">
                 {/* Header */}
                 <div className="mb-12">
                     <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">Crear tu outfit</h1>

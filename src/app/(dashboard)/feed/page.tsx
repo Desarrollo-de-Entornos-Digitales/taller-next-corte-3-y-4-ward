@@ -100,9 +100,9 @@ export default function FeedPage() {
                     <div>
                         <p className="text-blue-400 font-semibold text-sm mb-2">Resumen de tu armario</p>
                         <h2 className="text-white font-bold text-4xl md:text-5xl leading-tight">
-                            Tus prendas más
+                            Aquí encontrarás
                             <br />
-                            usadas
+                        tus prendas favoritas
                         </h2>
                     </div>
                     <p className="text-white/80 text-base md:text-lg max-w-sm md:mt-8 leading-relaxed">

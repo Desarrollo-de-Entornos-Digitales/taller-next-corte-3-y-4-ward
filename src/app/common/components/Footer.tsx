@@ -11,8 +11,12 @@ export default function Footer() {
     }
 
     return (
-        <footer className="w-full overflow-hidden bg-transparent">
-            <img src="/assets/Footer.svg" alt="Footer" className="block w-full h-auto" />
-        </footer>
+        <footer className="w-full overflow-hidden">
+    <img
+        src="/assets/Footer.svg"
+        alt="Footer"
+        className="block w-full h-auto"
+    />
+</footer>
     );
 }

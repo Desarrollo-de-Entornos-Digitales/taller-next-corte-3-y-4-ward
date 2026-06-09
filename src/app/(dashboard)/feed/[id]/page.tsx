@@ -86,7 +86,7 @@ export default function FeedItemPage() {
     const imageUrl = resolveImageUrl(garment.image_url || garment.image_url || undefined, typeLabel || undefined);
 
     return (
-        <main className="min-h-screen bg-linear-to-b from-slate-950 via-slate-900 to-slate-950">
+        <main className="min-h-screen bg-linear-to-b from-slate-950 via-slate-900 to-slate-950 pt-15">
             <section className="px-8 md:px-16 py-14">
                 <button
                     onClick={() => router.back()}

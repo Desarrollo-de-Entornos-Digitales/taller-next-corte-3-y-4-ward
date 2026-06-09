@@ -96,7 +96,7 @@ export default function RegisterGarmentPage() {
     };
 
     return (
-        <main className="min-h-screen bg-linear-to-b from-slate-950 via-slate-900 to-slate-950 pb-12">
+        <main className="min-h-screen bg-linear-to-b from-slate-950 via-slate-900 to-slate-950 pb-12 pt-15">
             <section className="px-8 md:px-16 py-14">
                 <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-6 mb-12">
                     <div>
