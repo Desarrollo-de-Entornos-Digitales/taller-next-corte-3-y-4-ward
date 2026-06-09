@@ -4,6 +4,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { garmentService, Garment } from '../../../common/services/garment.service';
 import { getGarmentColors, getGarmentImageUrl, resolveGarmentImage } from '@/src/util/garments.util';
+import ConfirmModal from '@/src/app/common/components/ConfirmModal';
 
 export default function FeedItemPage() {
     const params = useParams();
@@ -13,6 +14,9 @@ export default function FeedItemPage() {
     const [garment, setGarment] = useState<Garment | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [isDeleting, setIsDeleting] = useState(false);
+    const [deleteError, setDeleteError] = useState<string | null>(null);
+    const [confirmOpen, setConfirmOpen] = useState(false);
 
     useEffect(() => {
         let mounted = true;
@@ -60,6 +64,21 @@ export default function FeedItemPage() {
     const colors = getGarmentColors(garment);
     const uses = (garment.use_count ?? garment.use_count ?? 0) as number;
     const imageUrl = resolveGarmentImage(getGarmentImageUrl(garment), typeLabel, garment.name);
+
+    const handleDelete = async () => {
+        setDeleteError(null);
+        setIsDeleting(true);
+
+        try {
+            await garmentService.deleteGarment(id);
+            router.push('/feed');
+        } catch (err: unknown) {
+            const message = err instanceof Error ? err.message : 'No se pudo eliminar la prenda';
+            setDeleteError(message);
+        } finally {
+            setIsDeleting(false);
+        }
+    };
 
     return (
         <main className="min-h-screen bg-linear-to-b from-slate-950 via-slate-900 to-slate-950 pt-15">
@@ -121,15 +140,39 @@ export default function FeedItemPage() {
 
                         {/* Action Buttons */}
                         <div className="flex gap-3 pt-4 border-t border-slate-700">
-                            <button onClick={() => router.push(`/edit-garment/${id}`)}className="flex-1 px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-full transition"
-                             >
-                             Editar prenda
-                            </button>
+                            <button
+                            onClick={() => router.push(`/edit-garment/${id}`)}
+                            className="flex-1 px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-full transition"
+                        >
+                            Editar prenda
+                        </button>
 
-                            <button className="flex-1 px-4 py-3 bg-slate-700 hover:bg-slate-600 text-white font-semibold rounded-full transition">
-                                Eliminar prenda
-                            </button>
+                        <button
+                            onClick={() => setConfirmOpen(true)}
+                            disabled={isDeleting}
+                            className="flex-1 px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-full transition disabled:opacity-50"
+                        >
+                            {isDeleting ? 'Eliminando...' : 'Eliminar prenda'}
+                        </button>
+
+                        <ConfirmModal
+                            open={confirmOpen}
+                            title="Eliminar prenda"
+                            message="¿Estás seguro de eliminar esta prenda?"
+                            confirmText="Eliminar"
+                            cancelText="Cancelar"
+                            onCancel={() => setConfirmOpen(false)}
+                            onConfirm={async () => {
+                                setConfirmOpen(false);
+                                await handleDelete();
+                            }}
+                        />
+                    </div>
+                    {deleteError && (
+                        <div className="mt-4 rounded-xl bg-rose-500/10 border border-rose-500/40 p-4 text-rose-100">
+                            {deleteError}
                         </div>
+                    )}
                     </div>
 
                     {/* Right Panel - Image */}

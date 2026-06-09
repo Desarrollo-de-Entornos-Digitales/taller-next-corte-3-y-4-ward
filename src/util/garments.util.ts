@@ -92,6 +92,9 @@ export const garmentTypes = [
     'Accessories',
 ];
 
+export const garmentBrands = ['Nike', 'Adidas', 'Zara', 'H&M', 'Levi\'s', 'Gucci', 'Uniqlo', 'Puma'];
+export const garmentColors = ['Red', 'Blue', 'Green', 'Black', 'White', 'Gray', 'Yellow', 'Purple', 'Pink', 'Brown', 'Navy', 'Beige'];
+
 export const GARMENT_IMAGE_MAP: Record<string, string> = {
     'T-Shirt': '/assets/Tshirt.svg',
     Shirt: '/assets/Shirt.svg',
@@ -136,7 +139,7 @@ export function resolveGarmentImage(image?: string, label?: string, name?: strin
 }
 
 export function getGarmentImageUrl(garment: Garment): string | undefined {
-    return garment.image_url || garment.imageUrl;
+    return garment.image_preview || garment.image_url || garment.imageUrl;
 }
 
 export function getGarmentColors(garment: Garment): string[] {

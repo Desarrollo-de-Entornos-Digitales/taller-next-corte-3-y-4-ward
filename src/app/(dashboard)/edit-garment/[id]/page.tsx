@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 
-import { garmentTypes, getGarmentColors, resolveGarmentImage } from '@/src/util/garments.util';
+import { garmentTypes, garmentBrands, garmentColors, getGarmentColors, resolveGarmentImage } from '@/src/util/garments.util';
 import { garmentService, Garment } from '@/src/app/common/services/garment.service';
 import { useGarments } from '@/src/app/common/hooks/useGarments';
 
@@ -29,13 +29,19 @@ const [error, setError] = useState<string | null>(null);
 const { garments } = useGarments();
 
 const uniqueBrands = Array.from(
-    new Set(garments.map((g) => g.brand?.name).filter(Boolean))
+    new Set([
+        ...garmentBrands,
+        ...garments.map((g) => g.brand?.name).filter(Boolean),
+    ]),
 ).sort();
 
 const allColors = garments.flatMap((g) => getGarmentColors(g));
 
 const uniqueColors = Array.from(
-    new Set(allColors.filter((c): c is string => Boolean(c)))
+    new Set([
+        ...garmentColors,
+        ...allColors.filter((c): c is string => Boolean(c)),
+    ]),
 ).sort();
 
 useEffect(() => {
@@ -190,7 +196,8 @@ return (
                                 onChange={(e) => setType(e.target.value)}
                                 className="w-full rounded-full px-4 py-3 bg-slate-800 border border-slate-700 text-white"
                             >
-                                {garmentTypes.map((item) => (
+                                <option value="">Selecciona tipo</option>
+                                {Array.from(new Set([...garmentTypes, type].filter(Boolean))).map((item) => (
                                     <option key={item} value={item}>
                                         {item}
                                     </option>
@@ -199,24 +206,23 @@ return (
                         </div>
 
                         <div>
-    <label className="block text-white font-medium mb-2">
-        Color
-    </label>
+                            <label className="block text-white font-medium mb-2">
+                                Color
+                            </label>
 
-    <select
-        value={color}
-        onChange={(e) => setColor(e.target.value)}
-        className="w-full rounded-full px-4 py-3 bg-slate-800 border border-slate-700 text-white"
-    >
-        <option value="">Selecciona color</option>
-
-        {uniqueColors.map((c) => (
-            <option key={c} value={c}>
-                {c}
-            </option>
-        ))}
-    </select>
-</div>
+                            <select
+                                value={color}
+                                onChange={(e) => setColor(e.target.value)}
+                                className="w-full rounded-full px-4 py-3 bg-slate-800 border border-slate-700 text-white"
+                            >
+                                <option value="">Selecciona color</option>
+                                {Array.from(new Set([...uniqueColors, color].filter(Boolean))).map((c) => (
+                                    <option key={c} value={c}>
+                                        {c}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
 
                         <div>
                             <label className="block text-white font-medium mb-2">

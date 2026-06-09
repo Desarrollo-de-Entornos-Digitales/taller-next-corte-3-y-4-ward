@@ -4,16 +4,20 @@ import { useState } from 'react';
 
 import { useGarmentStore } from '@/src/lib/zustand/garmentStore';
 import { useGarments } from '@/src/app/common/hooks/useGarments';
-import { garmentTypes, getMockGarments, getGarmentColors, getGarmentImageUrl } from '@/src/util/garments.util';
+import {
+    garmentTypes,
+    garmentBrands,
+    garmentColors,
+    getMockGarments,
+    getGarmentColors,
+    getGarmentImageUrl,
+    getFallbackGarmentImage,
+} from '@/src/util/garments.util';
 
 import GarmentCard from '../../common/components/GarmentCard';
 import { garmentService } from '../../common/services/garment.service';
 
 const mockGarments = getMockGarments();
-const fallbackBrands = Array.from(new Set(mockGarments.map((g) => g.brand?.name).filter(Boolean))).sort();
-const fallbackColors = Array.from(
-    new Set(mockGarments.flatMap((g) => getGarmentColors(g)).filter((c): c is string => Boolean(c))),
-).sort();
 
 export default function RegisterGarmentPage() {
     const { garments, loading, error, refetch } = useGarments();
@@ -67,8 +71,27 @@ export default function RegisterGarmentPage() {
     const allColors = garments.flatMap((g) => getGarmentColors(g));
     const uniqueColors = Array.from(new Set(allColors)).sort();
 
-    const brandOptions = uniqueBrands.length ? uniqueBrands : fallbackBrands;
-    const colorOptions = uniqueColors.length ? uniqueColors : fallbackColors;
+    const brandOptions = Array.from(new Set([...garmentBrands, ...uniqueBrands]));
+    const colorOptions = Array.from(new Set([...garmentColors, ...uniqueColors]));
+
+    const buildPayload = async (): Promise<Record<string, unknown>> => {
+        const payload: Record<string, unknown> = {
+            name: name.trim(),
+            type: type.trim(),
+        };
+
+        if (brand.trim()) payload.brand = brand.trim();
+        if (color.trim()) payload.color = color.trim();
+        if (description.trim()) payload.description = description.trim();
+
+        if (selectedFile) {
+            payload.image_url = getFallbackGarmentImage(type.trim(), name.trim());
+        } else {
+            payload.image_url = imagePreview || getFallbackGarmentImage(type.trim(), name.trim());
+        }
+
+        return payload;
+    };
 
     const handleSubmit = async (e?: React.FormEvent) => {
         if (e) {
@@ -87,29 +110,9 @@ export default function RegisterGarmentPage() {
 
         try {
             setIsSaving(true);
-            let payload: Record<string, unknown> | FormData;
+            const payload = await buildPayload();
 
-            if (selectedFile) {
-                const formData = new FormData();
-                formData.append('name', name);
-                formData.append('brand', brand);
-                formData.append('type', type);
-                formData.append('color', color);
-                formData.append('description', description);
-                formData.append('image', selectedFile);
-                payload = formData;
-            } else {
-                payload = {
-                    name,
-                    brand,
-                    type,
-                    color,
-                    description,
-                    image_url: imagePreview || '/assets/Accessorie.svg',
-                };
-            }
-
-            const created = await garmentService.createGarment(payload);
+            const created = await garmentService.createGarment(payload, selectedFile && imagePreview ? imagePreview : undefined);
             addGarment(created);
             await refetch();
             setSaveSuccess(true);

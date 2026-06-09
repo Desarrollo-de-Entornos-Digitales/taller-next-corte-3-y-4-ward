@@ -7,12 +7,14 @@ import GarmentCard from '@/src/app/common/components/GarmentCard';
 import { getGarmentColors, getGarmentImageUrl } from '@/src/util/garments.util';
 import { useGarments } from '@/src/app/common/hooks/useGarments';
 import { useOutfitStore } from '@/src/lib/zustand/outfitStore';
+import { outfitService } from '@/src/app/(dashboard)/create-outfit/services/outfit.service';
 
 export default function MyOutfitDetailPage() {
   const params = useParams();
   const outfitId = params?.id as string | undefined;
   const router = useRouter();
-  const { createdOutfits, loadOutfits } = useOutfitStore();
+  const { createdOutfits, loadOutfits, removeOutfit } = useOutfitStore();
+  const [confirmOpen, setConfirmOpen] = useState(false);
   const { garments, loading: garmentsLoading } = useGarments();
   const [isOutfitsLoaded, setIsOutfitsLoaded] = useState(false);
 
@@ -59,7 +61,7 @@ export default function MyOutfitDetailPage() {
   return (
     <main className="min-h-screen bg-linear-to-b from-slate-950 via-slate-900 to-slate-950 p-8 md:p-12">
       <div className="max-w-6xl mx-auto space-y-8">
-        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between pt-15">
           <div>
             <p className="text-blue-400 font-semibold uppercase text-sm">Detalle de outfit</p>
             <h1 className="text-4xl font-bold text-white">{outfit.name}</h1>
@@ -72,6 +74,32 @@ export default function MyOutfitDetailPage() {
             >
               Volver a mis outfits
             </button>
+
+            <button
+              onClick={() => setConfirmOpen(true)}
+              className="px-5 py-3 rounded-full bg-blue-600 hover:bg-blue-700 text-white font-semibold transition"
+            >
+              Eliminar outfit
+            </button>
+
+            <ConfirmModal
+              open={confirmOpen}
+              title="Eliminar outfit"
+              message="¿Eliminar este outfit? Esta acción no se puede deshacer."
+              confirmText="Eliminar"
+              cancelText="Cancelar"
+              onCancel={() => setConfirmOpen(false)}
+              onConfirm={async () => {
+                setConfirmOpen(false);
+                try {
+                  await outfitService.deleteOutfit(outfitId as string);
+                } catch (e) {
+                  // ignore, we'll remove local copy anyway
+                }
+                removeOutfit(outfitId as string);
+                router.push('/my-outfits');
+              }}
+            />
           </div>
         </div>
 

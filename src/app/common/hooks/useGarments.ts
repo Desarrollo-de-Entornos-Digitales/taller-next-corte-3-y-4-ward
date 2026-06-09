@@ -9,8 +9,21 @@ function getUserIdFromToken(): number | null {
     const token = localStorage.getItem('token');
     if (!token) return null;
     try {
-        const payload = JSON.parse(atob(token.split('.')[1])) as { sub?: number | null };
-        return payload.sub ?? null;
+        const payload = JSON.parse(atob(token.split('.')[1])) as Record<string, unknown>;
+        const idValue =
+            payload.sub ??
+            payload.id ??
+            payload.user_id ??
+            payload.uid ??
+            payload.userId ??
+            null;
+
+        if (typeof idValue === 'string' && idValue.trim() !== '') {
+            const parsed = Number(idValue);
+            return Number.isNaN(parsed) ? null : parsed;
+        }
+
+        return typeof idValue === 'number' ? idValue : null;
     } catch {
         return null;
     }
@@ -27,10 +40,12 @@ export const useGarments = () => {
         try {
             setLoading(true);
             setError(null);
+            setGarments([]);
 
             const id = getUserIdFromToken();
             if (!id) {
                 setIsAuthenticated(false);
+                setGarments([]);
                 setLoading(false);
                 return;
             }

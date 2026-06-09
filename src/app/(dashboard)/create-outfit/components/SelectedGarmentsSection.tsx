@@ -38,7 +38,7 @@ export default function SelectedGarmentsSection({ garments, onRemoveGarment }: S
                         />
                         <button
                             onClick={() => onRemoveGarment(String(garment.id))}
-                            className="absolute top-2 right-2 z-10 bg-red-500 hover:bg-red-600 text-white rounded-full p-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                            className="absolute top-2 right-2 z-10 bg-blue-500 hover:bg-blue-600 text-white rounded-full p-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
                             aria-label="Remove garment"
                         >
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
