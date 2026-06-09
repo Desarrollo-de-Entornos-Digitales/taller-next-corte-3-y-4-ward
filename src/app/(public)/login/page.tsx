@@ -10,15 +10,18 @@ import GoogleIcon from '@mui/icons-material/Google';
 import SocialButton from '../../common/components/SocialButton';
 
 import loginAction from './login.action';
+import { useUserStore } from '@/src/lib/zustand/userStore';
 
-interface LoginResponse {
-    access_token: string;
-}
+const getErrorMessage = (error: unknown, fallback: string) => {
+    if (error instanceof Error) return error.message;
+    return fallback;
+};
 
 export default function LoginPage() {
     const formRef = useRef<HTMLFormElement>(null);
     const router = useRouter();
     const [loginError, setLoginError] = useState<string | null>(null);
+    const { setUser } = useUserStore();
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -31,10 +34,34 @@ export default function LoginPage() {
         try {
             const result = await loginAction(email, password);
             localStorage.setItem('token', result.access_token);
+
+            // Set user in Zustand store with hardcoded data for now
+            setUser({
+                id: '1',
+                username: email.split('@')[0],
+                email: email,
+                avatar: null,
+                roleId: 1,
+            });
+
+            // Try to fetch current user and cache it locally
+            try {
+                const { userService } = await import('@/src/app/common/services/user.service');
+                const apiUser = await userService.getCurrentUser();
+                if (apiUser) {
+                    setUser(apiUser);
+                    try {
+                        localStorage.setItem('current_user', JSON.stringify(apiUser));
+                    } catch (e) {}
+                }
+            } catch (e) {
+                // ignore
+            }
+
             router.push('/feed');
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error('Login error:', error);
-            setLoginError(error?.message || 'Error al iniciar sesión');
+            setLoginError(getErrorMessage(error, 'Error al iniciar sesión'));
         }
     };
 
@@ -43,17 +70,17 @@ export default function LoginPage() {
             className="min-h-screen w-full flex items-center justify-center bg-cover bg-center relative"
             style={{ backgroundImage: "url('/bg-login.jpg')" }}
         >
-            <div className="absolute inset-0 bg-gradient-to-br from-blue-900/80 via-slate-950/40 to-black/75" />
+            <div className="absolute inset-0 bg-linear-to-br from-blue-900/80 via-slate-950/40 to-black/75" />
             <div className="absolute inset-0 bg-blue-950/20" />
 
             <div
                 className="relative z-10 w-full max-w-md mx-4 overflow-hidden rounded-[36px]
-                bg-white/25 backdrop-blur-4xl border border-white/20 border-t-[2px] border-b-[2px] border-white/30
+                bg-white/25 backdrop-blur-4xl border border-white/20 border-t-2 border-b-2
                 shadow-[0_30px_80px_rgba(15,23,42,0.22)] px-8 py-10 flex flex-col items-center gap-6"
             >
                 <div
                     className="absolute -top-12 left-1/2 h-44 w-44 -translate-x-1/2 rounded-full
-                    bg-gradient-to-r from-sky-400/30 via-blue-500/20 to-indigo-500/15 blur-3xl"
+                    bg-linear-to-r from-sky-400/30 via-blue-500/20 to-indigo-500/15 blur-3xl"
                 />
 
                 <div className="relative z-10 flex flex-col items-center gap-2">
@@ -63,12 +90,17 @@ export default function LoginPage() {
                         width={220}
                         height={100}
                         loading="eager"
-                        style={{ width: 220, height: 'auto' }}
                         className="object-contain"
                     />
                 </div>
 
-                <form ref={formRef} onSubmit={handleSubmit} className="w-full flex flex-col gap-4">
+                <form
+                    ref={formRef}
+                    onSubmit={(e) => {
+                        void handleSubmit(e);
+                    }}
+                    className="w-full flex flex-col gap-4"
+                >
                     <div>
                         <label className="block text-sm text-white/90 mb-1">Username / Email address</label>
                         <input
@@ -92,14 +124,14 @@ export default function LoginPage() {
                     </div>
 
                     <div className="w-full text-right">
-                        <Link href="/forgot-password" className="text-sm text-white/80 hover:text-white">
+                        <Link href="/forgot-password?from=login" className="text-sm text-white/80 hover:text-white">
                             Forgot your password?
                         </Link>
                     </div>
 
                     <button
                         type="submit"
-                        className="btn border-0 rounded-full px-10 py-3 text-white bg-gradient-to-r from-blue-700 to-blue-500 hover:from-blue-800 hover:to-blue-600 font-semibold w-auto mx-auto min-w-[180px]"
+                        className="btn border-0 rounded-full px-10 py-3 text-white bg-linear-to-r from-blue-700 to-blue-500 hover:from-blue-800 hover:to-blue-600 font-semibold w-auto mx-auto min-w-45"
                     >
                         Log in
                     </button>

@@ -1,91 +1,184 @@
 'use client';
 
 import { useParams, useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { useState } from 'react';
-
-const garmentImageMap: Record<string, string> = {
-    Jacket: '/assets/Jacket.svg',
-    Shirt: '/assets/Shirt.svg',
-    Pants: '/assets/pants.svg',
-    'T-Shirt': '/assets/Tshirt.svg',
-    Sweater: '/assets/Sweater.svg',
-    Dress: '/assets/Dress.svg',
-    Skirt: '/assets/Skirt.svg',
-    Shoes: '/assets/Shoes.svg',
-    Accessorie: '/assets/Accessorie.svg',
-    Hoodie: '/assets/Accessorie.svg',
-    Polo: '/assets/Shirt.svg',
-    Blazer: '/assets/Jacket.svg',
-    Shorts: '/assets/Accessorie.svg',
-};
+import { useEffect, useState } from 'react';
+import { garmentService, Garment } from '../../../common/services/garment.service';
+import { getGarmentColors, getGarmentImageUrl, resolveGarmentImage } from '@/src/util/garments.util';
+import ConfirmModal from '@/src/app/common/components/ConfirmModal';
 
 export default function FeedItemPage() {
     const params = useParams();
     const router = useRouter();
-    const [isFavorited, setIsFavorited] = useState(false);
     const id = params?.id as string;
-    const imageUrl = garmentImageMap[id] || '/assets/Accessorie.svg';
+
+    const [garment, setGarment] = useState<Garment | null>(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+    const [isDeleting, setIsDeleting] = useState(false);
+    const [deleteError, setDeleteError] = useState<string | null>(null);
+    const [confirmOpen, setConfirmOpen] = useState(false);
+
+    useEffect(() => {
+        let mounted = true;
+        const fetchGarment = async () => {
+            setLoading(true);
+            setError(null);
+            try {
+                // Try direct endpoint first
+                const g = await garmentService.getGarment(id);
+                if (!mounted) return;
+                setGarment(g);
+            } catch (err) {
+                try {
+                    // Fallback: fetch all and find
+                    const all = await garmentService.getGarments();
+                    const found = all.find((it) => String(it.id) === id);
+                    if (!mounted) return;
+                    if (found) setGarment(found);
+                    else setError('Prenda no encontrada');
+                } catch (e) {
+                    if (!mounted) return;
+                    setError('Error al obtener la prenda');
+                }
+            } finally {
+                if (mounted) setLoading(false);
+            }
+        };
+
+        if (id) fetchGarment();
+        return () => {
+            mounted = false;
+        };
+    }, [id]);
+
+    if (loading) {
+        return <div className="p-8 text-white">Cargando prenda...</div>;
+    }
+
+    if (error || !garment) {
+        return <div className="p-8 text-white">{error || 'Prenda no encontrada'}</div>;
+    }
+
+    const typeLabel = garment.garment_type?.name || garment.type || '';
+    const brandName = garment.brand?.name || '';
+    const colors = getGarmentColors(garment);
+    const uses = (garment.use_count ?? garment.use_count ?? 0) as number;
+    const imageUrl = resolveGarmentImage(getGarmentImageUrl(garment), typeLabel, garment.name);
+
+    const handleDelete = async () => {
+        setDeleteError(null);
+        setIsDeleting(true);
+
+        try {
+            await garmentService.deleteGarment(id);
+            router.push('/feed');
+        } catch (err: unknown) {
+            const message = err instanceof Error ? err.message : 'No se pudo eliminar la prenda';
+            setDeleteError(message);
+        } finally {
+            setIsDeleting(false);
+        }
+    };
 
     return (
-        <main style={{ backgroundColor: '#131620' }} className="min-h-screen">
+        <main className="min-h-screen bg-linear-to-b from-slate-950 via-slate-900 to-slate-950 pt-15">
             <section className="px-8 md:px-16 py-14">
                 <button
                     onClick={() => router.back()}
-                    className="mb-8 text-cyan-400 hover:text-cyan-300 font-medium flex items-center gap-2 transition"
+                    className="mb-8 text-blue-700 hover:text-blue-500 font-medium flex items-center gap-2 transition"
                 >
                     ← Volver
                 </button>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-12 max-w-4xl">
-                    {/* Image */}
-                    <div className="relative h-96 rounded-2xl overflow-hidden bg-gradient-to-br from-gray-700 to-gray-900 flex items-center justify-center">
-                        <img src={imageUrl} alt={id} className="w-full h-full object-cover" />
-                    </div>
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 max-w-6xl">
+                    {/* Left Panel - Details */}
+                    <div className="lg:col-span-1 bg-slate-800/50 backdrop-blur rounded-3xl border border-slate-700/50 p-8">
+                        <h1 className="text-2xl font-bold text-white mb-8">Prenda</h1>
 
-                    {/* Details */}
-                    <div className="flex flex-col justify-between">
-                        <div>
-                            <div className="inline-flex px-4 py-2 bg-blue-500/20 rounded-full mb-6">
-                                <span className="text-blue-300 font-semibold text-sm">{id}</span>
+                        {/* Details Grid */}
+                        <div className="space-y-6 mb-8">
+                            <div>
+                                <div className="text-white/60 text-sm font-medium mb-2">Nombre:</div>
+                                <div className="text-white font-semibold text-lg">{garment.name}</div>
+                            </div>
+                            <div>
+                                <div className="text-white/60 text-sm font-medium mb-2">Marca:</div>
+                                <div className="text-white font-semibold text-lg">{brandName || '—'}</div>
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <div className="text-white/60 text-sm font-medium mb-2">Tipo:</div>
+                                    <div className="text-white font-semibold">{typeLabel || '—'}</div>
+                                </div>
+                                <div>
+                                    <div className="text-white/60 text-sm font-medium mb-2">Usos:</div>
+                                    <div className="text-white font-semibold">{uses}</div>
+                                </div>
                             </div>
 
-                            <h1 className="text-4xl font-bold text-white mb-4">{id}</h1>
-
-                            <p className="text-white/70 text-lg mb-8 leading-relaxed">
-                                Esta es una prenda de tu armario. Puedes marcarla como favorita y usarla para crear tus
-                                outfits.
-                            </p>
-
-                            <div className="space-y-4 mb-8">
-                                <div className="flex items-center justify-between">
-                                    <span className="text-white/60">Estado</span>
-                                    <span className="text-white font-semibold">Disponible</span>
-                                </div>
-                                <div className="flex items-center justify-between">
-                                    <span className="text-white/60">Tipo</span>
-                                    <span className="text-white font-semibold">{id}</span>
+                            {/* Colors */}
+                            <div>
+                                <div className="text-white/60 text-sm font-medium mb-3">Colores</div>
+                                <div className="flex flex-wrap gap-2">
+                                    {(colors.length > 0 ? colors : ['—']).map((color) => (
+                                        <span
+                                            key={color}
+                                            className="px-3 py-1 bg-slate-700 text-white text-sm rounded-full"
+                                        >
+                                            {color}
+                                        </span>
+                                    ))}
                                 </div>
                             </div>
                         </div>
 
-                        <div className="flex gap-4">
+                        {/* Outfits Section */}
+                        <div>
+                            <h3 className="text-white font-bold text-lg mb-4">Outfits donde aparece:</h3>
+                            <p className="text-white/60 text-sm mb-6">No hay outfits aún</p>
+                        </div>
+
+                        {/* Action Buttons */}
+                        <div className="flex gap-3 pt-4 border-t border-slate-700">
                             <button
-                                onClick={() => setIsFavorited(!isFavorited)}
-                                className={`flex-1 px-6 py-3 rounded-2xl font-semibold transition ${
-                                    isFavorited
-                                        ? 'bg-red-500/20 text-red-300 border border-red-500/30'
-                                        : 'bg-white/10 text-white border border-white/20 hover:bg-white/20'
-                                }`}
-                            >
-                                {isFavorited ? '❤ Favorita' : '🤍 Agregar a favoritos'}
-                            </button>
-                            <Link
-                                href="/feed"
-                                className="flex-1 px-6 py-3 rounded-2xl font-semibold bg-blue-500 text-white hover:bg-blue-600 transition text-center"
-                            >
-                                Volver al feed
-                            </Link>
+                            onClick={() => router.push(`/edit-garment/${id}`)}
+                            className="flex-1 px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-full transition"
+                        >
+                            Editar prenda
+                        </button>
+
+                        <button
+                            onClick={() => setConfirmOpen(true)}
+                            disabled={isDeleting}
+                            className="flex-1 px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-full transition disabled:opacity-50"
+                        >
+                            {isDeleting ? 'Eliminando...' : 'Eliminar prenda'}
+                        </button>
+
+                        <ConfirmModal
+                            open={confirmOpen}
+                            title="Eliminar prenda"
+                            message="¿Estás seguro de eliminar esta prenda?"
+                            confirmText="Eliminar"
+                            cancelText="Cancelar"
+                            onCancel={() => setConfirmOpen(false)}
+                            onConfirm={async () => {
+                                setConfirmOpen(false);
+                                await handleDelete();
+                            }}
+                        />
+                    </div>
+                    {deleteError && (
+                        <div className="mt-4 rounded-xl bg-rose-500/10 border border-rose-500/40 p-4 text-rose-100">
+                            {deleteError}
+                        </div>
+                    )}
+                    </div>
+
+                    {/* Right Panel - Image */}
+                    <div className="lg:col-span-2 flex items-center justify-center">
+                        <div className="relative h-full min-h-96 rounded-3xl overflow-hidden bg-linear-to-br from-slate-700 to-slate-900 flex items-center justify-center shadow-2xl">
+                            <img src={imageUrl} alt={garment.name || 'Prenda'} className="w-full h-full object-cover" />
                         </div>
                     </div>
                 </div>

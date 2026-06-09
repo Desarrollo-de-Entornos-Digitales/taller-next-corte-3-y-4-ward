@@ -23,7 +23,8 @@ export default async function registerAction(email: string, password: string): P
 
         return { success: true, data: result };
     } catch (error: any) {
-        const backendMessage = error?.response?.data?.message || error?.message || 'An error occurred during registration';
+        const backendMessage =
+            error?.response?.data?.message || error?.message || 'An error occurred during registration';
 
         if (error.response?.status === 409) {
             return { success: false, error: backendMessage };

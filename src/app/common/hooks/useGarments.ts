@@ -1,34 +1,87 @@
-import { useState, useEffect } from 'react';
-import { garmentService, Garment } from '../services/garment.service';
-import { getMockGarments } from '../../../util/garments.util';
+import { useEffect, useState } from 'react';
+
+import { useGarmentStore } from '@/src/lib/zustand/garmentStore';
+import { getGarmentImageUrl } from '@/src/util/garments.util';
+
+import { garmentService } from '../services/garment.service';
+
+function parseTokenUserId(token: string): number | null {
+    try {
+        const payload = JSON.parse(atob(token.split('.')[1])) as Record<string, unknown>;
+        const idValue = payload.sub ?? payload.id ?? payload.user_id ?? payload.uid ?? payload.userId ?? null;
+
+        if (typeof idValue === 'string' && idValue.trim() !== '') {
+            const parsed = Number(idValue);
+            return Number.isNaN(parsed) ? null : parsed;
+        }
+
+        return typeof idValue === 'number' ? idValue : null;
+    } catch {
+        return null;
+    }
+}
+
+function getUserIdFromStorage(): number | null {
+    if (typeof window === 'undefined') return null;
+    const token = localStorage.getItem('token');
+    if (token) {
+        const id = parseTokenUserId(token);
+        if (id != null) return id;
+    }
+
+    const currentUserString = localStorage.getItem('current_user');
+    if (!currentUserString) return null;
+
+    try {
+        const currentUser = JSON.parse(currentUserString) as Record<string, unknown>;
+        const idValue = currentUser.id ?? currentUser.user_id ?? currentUser.uid ?? currentUser.userId ?? null;
+        if (typeof idValue === 'string' && idValue.trim() !== '') {
+            const parsed = Number(idValue);
+            return Number.isNaN(parsed) ? null : parsed;
+        }
+        return typeof idValue === 'number' ? idValue : null;
+    } catch {
+        return null;
+    }
+}
 
 export const useGarments = () => {
-    const [garments, setGarments] = useState<Garment[]>([]);
+    const { garments, setGarments } = useGarmentStore();
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const [isAuthenticated, setIsAuthenticated] = useState(true);
-    const [isUsingMockData, setIsUsingMockData] = useState(false);
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const [userId, setUserId] = useState<number | null>(null);
+
+    const hasActualImage = (garment: Parameters<typeof getGarmentImageUrl>[0]) => {
+        const imageUrl = getGarmentImageUrl(garment);
+        return typeof imageUrl === 'string' && imageUrl.trim() !== '';
+    };
 
     const fetchGarments = async () => {
         try {
             setLoading(true);
             setError(null);
-            setIsUsingMockData(false);
-            const data = await garmentService.getGarments();
-            setGarments(data);
-            setIsAuthenticated(true);
-        } catch (err: any) {
-            if (err.response?.status === 401) {
-                setError('Authentication required');
+            setGarments([]);
+
+            const id = getUserIdFromStorage();
+            if (!id) {
+                // Not authenticated — still attempt to load garments (will return stored ones)
                 setIsAuthenticated(false);
+                setUserId(null);
             } else {
-                // Usar datos mock como fallback
-                console.warn('Using mock garments data as fallback');
-                const mockData = getMockGarments();
-                setGarments(mockData);
-                setIsUsingMockData(true);
-                setError(null);
                 setIsAuthenticated(true);
+                setUserId(id);
+            }
+
+            const data = await garmentService.getGarments();
+            setGarments(data.filter(hasActualImage));
+        } catch (err: unknown) {
+            const axiosError = err as { response?: { status?: number } };
+            if (axiosError.response?.status === 401) {
+                setIsAuthenticated(false);
+                setError('Authentication required');
+            } else {
+                setError('Error loading garments');
             }
             console.error('Error fetching garments:', err);
         } finally {
@@ -37,7 +90,12 @@ export const useGarments = () => {
     };
 
     useEffect(() => {
-        fetchGarments();
+        const loadGarments = async () => {
+            await fetchGarments();
+        };
+
+        void loadGarments();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     return {
@@ -45,7 +103,7 @@ export const useGarments = () => {
         loading,
         error,
         isAuthenticated,
-        isUsingMockData,
+        userId,
         refetch: fetchGarments,
     };
 };

@@ -2,36 +2,21 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+
 import FavoriteButton from './FavoriteButton';
+import { resolveGarmentImage } from '@/src/util/garments.util';
 
 interface GarmentCardProps {
     id: string;
     image?: string;
     imageAlt?: string;
     label: string;
+    name?: string;
+    brandName?: string | null;
+    colors?: string[];
     onFavorite?: (isFavorited: boolean) => void;
     isFavorited?: boolean;
     className?: string;
-}
-
-const garmentImageMap: Record<string, string> = {
-    Jacket: '/assets/Jacket.svg',
-    Shirt: '/assets/Shirt.svg',
-    Pants: '/assets/pants.svg',
-    'T-Shirt': '/assets/Tshirt.svg',
-    Sweater: '/assets/Sweater.svg',
-    Dress: '/assets/Dress.svg',
-    Skirt: '/assets/Skirt.svg',
-    Shoes: '/assets/Shoes.svg',
-    Accessorie: '/assets/Accessorie.svg',
-    Hoodie: '/assets/Accessorie.svg',
-    Polo: '/assets/Shirt.svg',
-    Blazer: '/assets/Jacket.svg',
-    Shorts: '/assets/Accessorie.svg',
-};
-
-function getGarmentImage(label: string): string {
-    return garmentImageMap[label] || '/assets/Accessorie.svg';
 }
 
 export default function GarmentCard({
@@ -39,12 +24,15 @@ export default function GarmentCard({
     image,
     imageAlt = 'Garment',
     label,
+    name,
+    brandName,
+    colors,
     onFavorite,
     isFavorited = false,
     className = '',
 }: GarmentCardProps) {
     const [isHovered, setIsHovered] = useState(false);
-    const imageUrl = image || getGarmentImage(label);
+    const imageUrl = resolveGarmentImage(image, label, name);
 
     return (
         <Link href={`/feed/${id}`}>
@@ -63,19 +51,47 @@ export default function GarmentCard({
                 {/* Card Container */}
                 <div className="flex flex-col h-full">
                     {/* Header with Label and Favorite Button */}
-                    <div className="flex items-center justify-between p-6 pb-4">
-                        <div className="inline-flex px-3.5 py-1 bg-white/25 rounded-full shadow-md">
-                            <span className="text-white font-bold text-base">{label}</span>
+                    <div className="flex items-center justify-between p-6 pb-2">
+                        <div>
+                            <div className="inline-flex px-3.5 py-1 bg-white/25 rounded-full shadow-md mb-2">
+                                <span className="text-white font-bold text-base">{label}</span>
+                            </div>
+                            {name && <div className="text-white font-semibold text-lg">{name}</div>}
+                            {brandName && <div className="text-white/70 text-sm">{brandName}</div>}
                         </div>
                         <FavoriteButton isFavorited={isFavorited} onToggle={onFavorite} />
                     </div>
 
                     {/* Image Section */}
                     <div className="relative w-full aspect-square overflow-hidden px-6 pb-6">
-                        <div className="relative w-full h-full rounded-2xl overflow-hidden bg-gradient-to-br from-gray-700 to-gray-900 flex items-center justify-center">
-                            <img src={imageUrl} alt={imageAlt} className="w-full h-full object-cover" />
+                        <div className="relative w-full h-full rounded-2xl overflow-hidden bg-linear-to-br from-gray-700 to-gray-900 flex items-center justify-center">
+                            <img
+                                src={imageUrl}
+                                alt={imageAlt}
+                                className="w-full h-full object-contain"
+                                onError={(event) => {
+                                    const target = event.currentTarget as HTMLImageElement;
+                                    const fallbackUrl = resolveGarmentImage(undefined, label, name);
+                                    if (target.src !== fallbackUrl) {
+                                        target.src = fallbackUrl;
+                                    }
+                                }}
+                            />
                         </div>
                     </div>
+                    {/* Color badges */}
+                    {colors && colors.length > 0 && (
+                        <div className="p-4 pt-0 flex flex-wrap gap-2">
+                            {colors.map((c) => (
+                                <span
+                                    key={c}
+                                    className="inline-flex items-center px-3.5 py-1 rounded-full bg-white/25 text-white text-sm font-medium shadow-md"
+                                >
+                                    {c}
+                                </span>
+                            ))}
+                        </div>
+                    )}
                 </div>
             </div>
         </Link>
