@@ -134,42 +134,59 @@ class OutfitService {
 
             const garmentIds = resolvedGarments.map((g) => g.id);
 
-            const response = await axiosClient.post<Partial<OutfitResponse>>('/outfits', {
-                name: outfitData.name,
-                occasion: outfitData.occasion,
-                garmentIds,
-            });
+            try {
+                const response = await axiosClient.post<Partial<OutfitResponse>>('/outfits', {
+                    name: outfitData.name,
+                    occasion: outfitData.occasion,
+                    garmentIds,
+                });
 
-            const resp = response.data || {};
-            return {
-                id: String(resp.id ?? Date.now()),
-                name: resp.name ?? outfitData.name,
-                occasion: resp.occasion ?? outfitData.occasion,
-                garments: resolvedGarments,
-                createdAt: resp.createdAt ?? new Date().toISOString(),
-                updatedAt: resp.updatedAt ?? new Date().toISOString(),
-            } as OutfitResponse;
-        } catch (error: any) {
-            const status = error?.response?.status;
-            if (
-                !error.response ||
-                status === 413 ||
-                status === 502 ||
-                status === 503 ||
-                status === 504 ||
-                (status !== undefined && status >= 500)
-            ) {
-                console.warn(
-                    'Outfit create failed on server, saving locally. status=',
-                    status,
-                    'msg=',
-                    error?.response?.data || error?.message,
-                );
-                return saveOutfitLocally(outfitData);
+                const resp = response.data || {};
+                const outfitResponse = {
+                    id: String(resp.id ?? Date.now()),
+                    name: resp.name ?? outfitData.name,
+                    occasion: resp.occasion ?? outfitData.occasion,
+                    garments: resolvedGarments,
+                    createdAt: resp.createdAt ?? new Date().toISOString(),
+                    updatedAt: resp.updatedAt ?? new Date().toISOString(),
+                } as OutfitResponse;
+
+                // Also save locally as backup
+                saveOutfitLocally(outfitData);
+                return outfitResponse;
+            } catch (backendError: any) {
+                const status = backendError?.response?.status;
+                // If backend is down, save locally
+                if (
+                    !backendError.response ||
+                    status === 413 ||
+                    status === 502 ||
+                    status === 503 ||
+                    status === 504 ||
+                    (status !== undefined && status >= 500)
+                ) {
+                    console.warn(
+                        'Outfit create failed on server, saving locally. status=',
+                        status,
+                        'msg=',
+                        backendError?.response?.data || backendError?.message,
+                    );
+                    return saveOutfitLocally(outfitData);
+                }
+                // If it's another error, throw
+                const message =
+                    backendError?.response?.data?.message || backendError?.message || 'Failed to create outfit';
+                throw new Error(message);
             }
-
-            const message = error?.response?.data?.message || error?.message || 'Failed to create outfit';
-            throw new Error(message);
+        } catch (error: any) {
+            console.error('Error in createOutfit:', error);
+            // Last resort: save locally
+            try {
+                return saveOutfitLocally(outfitData);
+            } catch (localSaveError) {
+                console.error('Failed to save outfit locally:', localSaveError);
+                throw error;
+            }
         }
     }
 

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 import { useGarments } from '@/src/app/common/hooks/useGarments';
 import { useOutfitStore } from '@/src/lib/zustand/outfitStore';
@@ -12,6 +13,7 @@ import SelectedGarmentsSection from './components/SelectedGarmentsSection';
 import AddGarmentsSection from './components/AddGarmentsSection';
 
 export default function CreateOutfitPage() {
+    const router = useRouter();
     const { garments, loading, error } = useGarments();
     const {
         selectedGarmentIds,
@@ -51,34 +53,34 @@ export default function CreateOutfitPage() {
             setIsSaving(true);
             setSaveError(null);
 
-            let createdOutfit = null;
-            try {
-                createdOutfit = await outfitService.createOutfit({
-                    name: outfitName,
-                    occasion: occasion,
-                    garments: selectedGarments,
-                });
-            } catch (serviceError) {
-                console.warn('Error creating outfit en servidor, guardando localmente:', serviceError);
-            }
+            // Create outfit (will save locally if backend fails)
+            const createdOutfit = await outfitService.createOutfit({
+                name: outfitName,
+                occasion: occasion,
+                garments: selectedGarments,
+            });
 
-            const garmentIdsToStore = createdOutfit
-                ? (createdOutfit.garments || []).map((g) => String(g.id))
-                : selectedGarments.map((g) => String(g.id));
+            // Store in Zustand store
+            const garmentIds = (createdOutfit.garments || selectedGarments).map((g) => String(g.id));
 
             addOutfit({
-                id: String(createdOutfit?.id ?? `local-${Date.now()}`),
+                id: String(createdOutfit.id),
                 name: outfitName,
                 occasion,
-                garmentIds: garmentIdsToStore,
+                garmentIds,
             });
 
             // Reset form on success
             clearOutfit();
             setSaveSuccess(true);
 
-            // Limpiar mensaje de éxito después de 3 segundos
+            // Clear success message after 3 seconds
             setTimeout(() => setSaveSuccess(false), 3000);
+
+            // Navigate to my-outfits after 2 seconds
+            setTimeout(() => {
+                router.push('/my-outfits');
+            }, 2000);
         } catch (err: unknown) {
             const message = err instanceof Error ? err.message : 'Error al guardar el outfit';
             setSaveError(message);
